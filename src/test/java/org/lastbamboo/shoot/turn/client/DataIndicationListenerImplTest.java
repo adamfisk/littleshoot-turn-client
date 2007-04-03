@@ -16,7 +16,7 @@ import org.easymock.MockControl;
 
 import org.lastbamboo.common.nio.NioServerImpl;
 import org.lastbamboo.common.nio.SelectorManagerImpl;
-import org.lastbamboo.shoot.protocol.ReaderWriter;
+import org.lastbamboo.common.protocol.ReaderWriter;
 import org.lastbamboo.shoot.turn.client.stub.ReaderWriterStub;
 import org.lastbamboo.shoot.turn.message.DataIndication;
 import org.lastbamboo.shoot.turn.message.DataIndicationImpl;

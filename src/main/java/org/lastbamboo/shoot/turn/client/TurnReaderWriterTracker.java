@@ -2,7 +2,7 @@ package org.lastbamboo.shoot.turn.client;
 
 import java.net.InetSocketAddress;
 
-import org.lastbamboo.shoot.protocol.ReaderWriter;
+import org.lastbamboo.common.protocol.ReaderWriter;
 
 /**
  * Interface for classes that keep track of TURN "sockets" to remote hosts.

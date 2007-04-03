@@ -10,7 +10,7 @@ import junit.framework.TestCase;
 import org.easymock.MockControl;
 import org.lastbamboo.common.nio.SelectorManager;
 import org.lastbamboo.common.nio.SelectorManagerImpl;
-import org.lastbamboo.shoot.protocol.ProtocolHandler;
+import org.lastbamboo.common.protocol.ProtocolHandler;
 import org.lastbamboo.shoot.turn.client.stub.SocketChannelStub;
 
 /**

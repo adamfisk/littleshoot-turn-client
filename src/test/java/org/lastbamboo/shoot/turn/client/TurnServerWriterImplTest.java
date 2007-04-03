@@ -7,7 +7,7 @@ import junit.framework.TestCase;
 
 import org.easymock.MockControl;
 
-import org.lastbamboo.shoot.protocol.ReaderWriter;
+import org.lastbamboo.common.protocol.ReaderWriter;
 import org.lastbamboo.shoot.turn.client.stub.ReaderWriterStub;
 import org.lastbamboo.shoot.turn.message.TurnMessageFactory;
 import org.lastbamboo.shoot.turn.message.TurnMessageFactoryImpl;

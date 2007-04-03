@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.nio.SelectorManager;
-import org.lastbamboo.shoot.protocol.ProtocolHandler;
+import org.lastbamboo.common.protocol.ProtocolHandler;
 import org.lastbamboo.util.ByteBufferUtil;
 
 /**

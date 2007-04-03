@@ -7,9 +7,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.lastbamboo.shoot.protocol.CloseListener;
-import org.lastbamboo.shoot.protocol.ReaderWriter;
-import org.lastbamboo.shoot.protocol.ReaderWriterUtils;
+import org.lastbamboo.common.protocol.CloseListener;
+import org.lastbamboo.common.protocol.ReaderWriter;
+import org.lastbamboo.common.protocol.ReaderWriterUtils;
 
 /**
  * Class that keeps track of <code>ReaderWriter</code>s to the locally running

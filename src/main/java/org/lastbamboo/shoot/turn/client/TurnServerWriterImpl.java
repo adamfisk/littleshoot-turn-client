@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.lastbamboo.shoot.protocol.CloseListener;
-import org.lastbamboo.shoot.protocol.ReaderWriter;
+import org.lastbamboo.common.protocol.CloseListener;
+import org.lastbamboo.common.protocol.ReaderWriter;
 import org.lastbamboo.shoot.turn.message.SendErrorResponse;
 import org.lastbamboo.shoot.turn.message.SendRequest;
 import org.lastbamboo.shoot.turn.message.SendResponse;
