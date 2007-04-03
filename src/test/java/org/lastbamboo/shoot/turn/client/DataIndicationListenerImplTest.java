@@ -14,8 +14,8 @@ import org.apache.commons.logging.LogFactory;
 
 import org.easymock.MockControl;
 
-import org.lastbamboo.shoot.nio.NioServerImpl;
-import org.lastbamboo.shoot.nio.SelectorManagerImpl;
+import org.lastbamboo.common.nio.NioServerImpl;
+import org.lastbamboo.common.nio.SelectorManagerImpl;
 import org.lastbamboo.shoot.protocol.ReaderWriter;
 import org.lastbamboo.shoot.turn.client.stub.ReaderWriterStub;
 import org.lastbamboo.shoot.turn.message.DataIndication;

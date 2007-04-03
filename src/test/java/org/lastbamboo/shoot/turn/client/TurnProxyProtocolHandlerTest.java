@@ -8,8 +8,8 @@ import java.util.Arrays;
 import junit.framework.TestCase;
 
 import org.easymock.MockControl;
-import org.lastbamboo.shoot.nio.SelectorManager;
-import org.lastbamboo.shoot.nio.SelectorManagerImpl;
+import org.lastbamboo.common.nio.SelectorManager;
+import org.lastbamboo.common.nio.SelectorManagerImpl;
 import org.lastbamboo.shoot.protocol.ProtocolHandler;
 import org.lastbamboo.shoot.turn.client.stub.SocketChannelStub;
 
