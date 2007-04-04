@@ -50,7 +50,7 @@
                 <configuration>
                     <excludes>
                         <exclude>
-                            org/lastbamboo/shoot/turn/client/TurnReaderWriterFactoryImplTest.java
+                            org/lastbamboo/common/turn/client/TurnReaderWriterFactoryImplTest.java
                             </exclude>
                         </excludes>
                     </configuration>

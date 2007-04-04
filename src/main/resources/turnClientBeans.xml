@@ -7,7 +7,7 @@
         client connections.
     -->
     <bean id="localSelectorManager"
-          class="org.lastbamboo.shoot.nio.SelectorManagerImpl">
+          class="org.lastbamboo.common.nio.SelectorManagerImpl">
           <constructor-arg><value>Local-TURN-Selector</value></constructor-arg>
           </bean>
 
@@ -33,7 +33,7 @@
         client proxy server.
     -->
     <bean id="turnReaderWriterFactory"
-          class="org.lastbamboo.shoot.turn.client.TurnReaderWriterFactoryImpl">
+          class="org.lastbamboo.common.turn.client.TurnReaderWriterFactoryImpl">
         <constructor-arg>
         	<ref local="localSelectorManager"/>
         	</constructor-arg>
@@ -47,7 +47,7 @@
         messages to send on to the TURN server.
     -->
     <bean id="localTurnProxy"
-          class="org.lastbamboo.shoot.nio.NioServerImpl"
+          class="org.lastbamboo.common.nio.NioServerImpl"
           init-method="startServer">
         <constructor-arg>
             <ref local="turnLocalProxyPort"/>
@@ -64,7 +64,7 @@
         The message handler factory to use for processing TURN messages.
     -->
     <bean id="turnClientMessageHandlerFactory"
-          class="org.lastbamboo.shoot.turn.client.message.reader.ClientTurnMessageReaderFactory">
+          class="org.lastbamboo.common.turn.client.message.reader.ClientTurnMessageReaderFactory">
         <property name="turnMessageFactory">
             <ref bean="turnMessageFactory"/>
             </property>
@@ -77,13 +77,13 @@
         The object that tracks TURN servers.
     -->
     <bean id="turnServerTracker"
-          class="org.lastbamboo.shoot.turn.client.TurnServerTrackerImpl"/>
+          class="org.lastbamboo.common.turn.client.TurnServerTrackerImpl"/>
 
     <!--
         The object that loads TURN servers from disk.
     -->
     <bean id="turnServerLoader"
-          class="org.lastbamboo.shoot.turn.client.TurnServerLoaderImpl">
+          class="org.lastbamboo.common.turn.client.TurnServerLoaderImpl">
         <property name="turnServerTracker">
             <ref local="turnServerTracker"/>
             </property>
@@ -93,7 +93,7 @@
         The object that connects to TURN servers.
     -->
     <bean id="turnServerConnector"
-          class="org.lastbamboo.shoot.nio.NioServerConnector">
+          class="org.lastbamboo.common.nio.NioServerConnector">
         <constructor-arg index="0">
             <ref bean="selectorManager"/>
             </constructor-arg>
@@ -105,7 +105,7 @@
         server connections.
     -->
     <bean id="turnServerConnectionEstablisher"
-          class="org.lastbamboo.shoot.turn.client.TurnServerConnectionEstablisher">
+          class="org.lastbamboo.common.turn.client.TurnServerConnectionEstablisher">
         <constructor-arg>
             <ref bean="turnAllocationManager"/>
             </constructor-arg>
@@ -115,7 +115,7 @@
         The object that manages address allocations with TURN servers.
     -->
     <bean id="turnAllocationManager"
-          class="org.lastbamboo.shoot.turn.client.TurnAllocationManagerImpl">
+          class="org.lastbamboo.common.turn.client.TurnAllocationManagerImpl">
         <constructor-arg index="0">
             <ref bean="turnMessageFactory"/>
             </constructor-arg>
