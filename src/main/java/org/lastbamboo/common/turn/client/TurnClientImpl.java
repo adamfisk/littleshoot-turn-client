@@ -3,7 +3,7 @@ import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.lastbamboo.util.ConnectionMaintainer;
+import org.lastbamboo.common.util.ConnectionMaintainer;
 
 /**
  * Implementation of the TURN client facade, providing an API for external

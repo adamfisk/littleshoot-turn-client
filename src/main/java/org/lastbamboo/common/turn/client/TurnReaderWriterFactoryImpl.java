@@ -14,7 +14,7 @@ import org.lastbamboo.common.nio.NioReaderWriter;
 import org.lastbamboo.common.nio.SelectorManager;
 import org.lastbamboo.common.protocol.ProtocolHandler;
 import org.lastbamboo.common.protocol.ReaderWriter;
-import org.lastbamboo.util.SocketHandler;
+import org.lastbamboo.common.util.SocketHandler;
 
 /**
  * Factory for creating TURN sockets.  This creates real sockets running

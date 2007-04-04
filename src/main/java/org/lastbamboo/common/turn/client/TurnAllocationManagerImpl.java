@@ -15,8 +15,8 @@ import org.lastbamboo.common.turn.message.TurnMessage;
 import org.lastbamboo.common.turn.message.TurnMessageFactory;
 import org.lastbamboo.common.turn.message.TurnMessageVisitor;
 import org.lastbamboo.common.turn.message.handler.TurnMessageHandlerFactory;
-import org.lastbamboo.util.FuncWithReturn;
-import org.lastbamboo.util.SocketHandler;
+import org.lastbamboo.common.util.FuncWithReturn;
+import org.lastbamboo.common.util.SocketHandler;
 
 /**
  * Maintains sufficient allocated addresses with the available TURN servers.

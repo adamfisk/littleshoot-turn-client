@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import org.lastbamboo.common.protocol.ReaderWriter;
-import org.lastbamboo.util.SocketHandler;
+import org.lastbamboo.common.util.SocketHandler;
 
 /**
  * Interface for class that creates TURN sockets through the locally-running

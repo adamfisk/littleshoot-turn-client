@@ -11,7 +11,7 @@ import org.lastbamboo.common.turn.client.TurnServerWriterImpl;
 import org.lastbamboo.common.turn.client.stub.ReaderWriterStub;
 import org.lastbamboo.common.turn.message.TurnMessageFactoryImpl;
 import org.lastbamboo.common.turn.message.attribute.TurnAttributeFactoryImpl;
-import org.lastbamboo.util.SocketHandler;
+import org.lastbamboo.common.util.SocketHandler;
 import org.springframework.test.AbstractDependencyInjectionSpringContextTests;
 
 /**

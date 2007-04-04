@@ -31,8 +31,8 @@ import org.lastbamboo.common.turn.message.DataIndicationImpl;
 import org.lastbamboo.common.turn.message.TurnMessageFactoryImpl;
 import org.lastbamboo.common.turn.message.attribute.TurnAttributeFactory;
 import org.lastbamboo.common.turn.message.attribute.TurnAttributeFactoryImpl;
-import org.lastbamboo.util.FuncWithReturn;
-import org.lastbamboo.util.SocketHandler;
+import org.lastbamboo.common.util.FuncWithReturn;
+import org.lastbamboo.common.util.SocketHandler;
 
 /**
  * Test for the class that listens for TURN "Data Indication" messages.

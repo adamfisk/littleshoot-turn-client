@@ -5,8 +5,8 @@ import java.net.InetSocketAddress;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.lastbamboo.util.ConnectionEstablisher;
-import org.lastbamboo.util.ConnectionMaintainerListener;
+import org.lastbamboo.common.util.ConnectionEstablisher;
+import org.lastbamboo.common.util.ConnectionMaintainerListener;
 
 /**
  * The connection establisher used to establish connections with TURN servers.

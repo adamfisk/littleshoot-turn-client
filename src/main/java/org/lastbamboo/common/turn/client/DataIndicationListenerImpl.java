@@ -7,8 +7,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.protocol.ReaderWriter;
 import org.lastbamboo.common.turn.message.DataIndication;
-import org.lastbamboo.util.FuncWithReturn;
-import org.lastbamboo.util.SocketHandler;
+import org.lastbamboo.common.util.FuncWithReturn;
+import org.lastbamboo.common.util.SocketHandler;
 
 /**
  * Class that listens for TURN "Data Indication" messages and delivers them
