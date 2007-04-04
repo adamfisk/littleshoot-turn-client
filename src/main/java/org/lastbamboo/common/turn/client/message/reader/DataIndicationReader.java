@@ -5,12 +5,12 @@ import java.net.InetSocketAddress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.lastbamboo.shoot.turn.message.TurnMessageFactory;
-import org.lastbamboo.shoot.turn.message.attribute.DataAttribute;
-import org.lastbamboo.shoot.turn.message.attribute.InetSocketAddressTurnAttribute;
-import org.lastbamboo.shoot.turn.message.attribute.TurnAttributeTypes;
-import org.lastbamboo.shoot.turn.message.attribute.reader.TurnAttributesReader;
-import org.lastbamboo.shoot.turn.message.handler.AbstractTurnMessageHandler;
+import org.lastbamboo.common.turn.message.TurnMessageFactory;
+import org.lastbamboo.common.turn.message.attribute.DataAttribute;
+import org.lastbamboo.common.turn.message.attribute.InetSocketAddressTurnAttribute;
+import org.lastbamboo.common.turn.message.attribute.TurnAttributeTypes;
+import org.lastbamboo.common.turn.message.attribute.reader.TurnAttributesReader;
+import org.lastbamboo.common.turn.message.handler.AbstractTurnMessageHandler;
 
 /**
  * Creates a new class for handing "Data Indication" messages from the 

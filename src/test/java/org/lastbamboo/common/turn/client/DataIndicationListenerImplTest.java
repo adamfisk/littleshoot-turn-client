@@ -26,11 +26,11 @@ import org.lastbamboo.common.turn.client.TurnServerListener;
 import org.lastbamboo.common.turn.client.TurnServerWriter;
 import org.lastbamboo.common.turn.client.TurnServerWriterImpl;
 import org.lastbamboo.common.turn.client.stub.ReaderWriterStub;
-import org.lastbamboo.shoot.turn.message.DataIndication;
-import org.lastbamboo.shoot.turn.message.DataIndicationImpl;
-import org.lastbamboo.shoot.turn.message.TurnMessageFactoryImpl;
-import org.lastbamboo.shoot.turn.message.attribute.TurnAttributeFactory;
-import org.lastbamboo.shoot.turn.message.attribute.TurnAttributeFactoryImpl;
+import org.lastbamboo.common.turn.message.DataIndication;
+import org.lastbamboo.common.turn.message.DataIndicationImpl;
+import org.lastbamboo.common.turn.message.TurnMessageFactoryImpl;
+import org.lastbamboo.common.turn.message.attribute.TurnAttributeFactory;
+import org.lastbamboo.common.turn.message.attribute.TurnAttributeFactoryImpl;
 import org.lastbamboo.util.FuncWithReturn;
 import org.lastbamboo.util.SocketHandler;
 

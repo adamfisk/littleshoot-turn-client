@@ -10,11 +10,11 @@ import org.lastbamboo.common.protocol.ProtocolHandler;
 import org.lastbamboo.common.protocol.ReadWriteConnectorListener;
 import org.lastbamboo.common.protocol.ReaderWriter;
 import org.lastbamboo.common.protocol.ServerConnector;
-import org.lastbamboo.shoot.turn.TurnProtocolHandler;
-import org.lastbamboo.shoot.turn.message.TurnMessage;
-import org.lastbamboo.shoot.turn.message.TurnMessageFactory;
-import org.lastbamboo.shoot.turn.message.TurnMessageVisitor;
-import org.lastbamboo.shoot.turn.message.handler.TurnMessageHandlerFactory;
+import org.lastbamboo.common.turn.TurnProtocolHandler;
+import org.lastbamboo.common.turn.message.TurnMessage;
+import org.lastbamboo.common.turn.message.TurnMessageFactory;
+import org.lastbamboo.common.turn.message.TurnMessageVisitor;
+import org.lastbamboo.common.turn.message.handler.TurnMessageHandlerFactory;
 import org.lastbamboo.util.FuncWithReturn;
 import org.lastbamboo.util.SocketHandler;
 

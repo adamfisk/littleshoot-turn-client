@@ -3,11 +3,11 @@ package org.lastbamboo.common.turn.client.message.reader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import org.lastbamboo.shoot.turn.message.TurnMessageFactory;
-import org.lastbamboo.shoot.turn.message.attribute.ErrorCodeAttribute;
-import org.lastbamboo.shoot.turn.message.attribute.StunAttributeTypes;
-import org.lastbamboo.shoot.turn.message.attribute.reader.TurnAttributesReader;
-import org.lastbamboo.shoot.turn.message.handler.AbstractTurnMessageHandler;
+import org.lastbamboo.common.turn.message.TurnMessageFactory;
+import org.lastbamboo.common.turn.message.attribute.ErrorCodeAttribute;
+import org.lastbamboo.common.turn.message.attribute.StunAttributeTypes;
+import org.lastbamboo.common.turn.message.attribute.reader.TurnAttributesReader;
+import org.lastbamboo.common.turn.message.handler.AbstractTurnMessageHandler;
 
 /**
  * Reader for TURN "Send Error Response" messages.

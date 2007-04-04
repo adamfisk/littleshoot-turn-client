@@ -1,6 +1,6 @@
 package org.lastbamboo.common.turn.client;
 
-import org.lastbamboo.shoot.turn.message.DataIndication;
+import org.lastbamboo.common.turn.message.DataIndication;
 
 /**
  * Listener for TURN "Data Indication" messages.

@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.Collection;
 
+import org.lastbamboo.common.turn.TurnConstants;
 import org.lastbamboo.common.turn.client.TurnServerLoaderImpl;
 import org.lastbamboo.common.turn.client.TurnServerTracker;
 import org.lastbamboo.common.turn.client.TurnServerTrackerImpl;
-import org.lastbamboo.shoot.turn.TurnConstants;
 
 import junit.framework.TestCase;
 

@@ -1,7 +1,7 @@
 package org.lastbamboo.common.turn.client;
 
-import org.lastbamboo.shoot.turn.message.SendErrorResponse;
-import org.lastbamboo.shoot.turn.message.SendResponse;
+import org.lastbamboo.common.turn.message.SendErrorResponse;
+import org.lastbamboo.common.turn.message.SendResponse;
 
 /**
  * Interface for class that wish to process TURN Send Response and 

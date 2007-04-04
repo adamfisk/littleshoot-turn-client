@@ -13,8 +13,8 @@ import org.lastbamboo.common.turn.client.TurnReaderWriterTrackerImpl;
 import org.lastbamboo.common.turn.client.TurnServerListener;
 import org.lastbamboo.common.turn.client.TurnServerWriterImpl;
 import org.lastbamboo.common.turn.client.stub.ReaderWriterStub;
-import org.lastbamboo.shoot.turn.message.TurnMessageFactory;
-import org.lastbamboo.shoot.turn.message.TurnMessageFactoryImpl;
+import org.lastbamboo.common.turn.message.TurnMessageFactory;
+import org.lastbamboo.common.turn.message.TurnMessageFactoryImpl;
 
 /**
  * Tests the class for writing messages to TURN servers.

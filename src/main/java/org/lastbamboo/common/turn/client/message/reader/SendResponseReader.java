@@ -4,9 +4,9 @@ import java.net.InetSocketAddress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.lastbamboo.shoot.turn.message.TurnMessageFactory;
-import org.lastbamboo.shoot.turn.message.attribute.reader.TurnAttributesReader;
-import org.lastbamboo.shoot.turn.message.handler.AbstractTurnMessageHandler;
+import org.lastbamboo.common.turn.message.TurnMessageFactory;
+import org.lastbamboo.common.turn.message.attribute.reader.TurnAttributesReader;
+import org.lastbamboo.common.turn.message.handler.AbstractTurnMessageHandler;
 
 /**
  * Handler for a response to send request.

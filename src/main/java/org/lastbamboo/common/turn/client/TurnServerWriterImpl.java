@@ -7,10 +7,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.protocol.CloseListener;
 import org.lastbamboo.common.protocol.ReaderWriter;
-import org.lastbamboo.shoot.turn.message.SendErrorResponse;
-import org.lastbamboo.shoot.turn.message.SendRequest;
-import org.lastbamboo.shoot.turn.message.SendResponse;
-import org.lastbamboo.shoot.turn.message.TurnMessageFactory;
+import org.lastbamboo.common.turn.message.SendErrorResponse;
+import org.lastbamboo.common.turn.message.SendRequest;
+import org.lastbamboo.common.turn.message.SendResponse;
+import org.lastbamboo.common.turn.message.TurnMessageFactory;
 
 /**
  * Manages a single TURN client connection to a TURN server.
