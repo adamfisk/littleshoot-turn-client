@@ -12,7 +12,7 @@ import org.lastbamboo.common.util.ConnectionMaintainerListener;
  * The connection establisher used to establish connections with TURN servers.
  */
 public final class TurnServerConnectionEstablisher
-        implements ConnectionEstablisher
+        implements ConnectionEstablisher<InetSocketAddress,TurnServerWriter>
     {
     /**
      * The log for this class.
@@ -41,12 +41,10 @@ public final class TurnServerConnectionEstablisher
      * {@inheritDoc}
      */
     public void establish
-            (final Object serverId,
-             final ConnectionMaintainerListener listener)
+            (final InetSocketAddress serverId,
+             final ConnectionMaintainerListener<TurnServerWriter> listener)
         {
         LOG.debug ("establish: " + serverId);
-
-        final InetSocketAddress address = (InetSocketAddress) serverId;
 
         final TurnServerListener turnServerListener = new TurnServerListener ()
             {
@@ -69,6 +67,6 @@ public final class TurnServerConnectionEstablisher
                 }
             };
 
-        m_allocationManager.allocate (address, turnServerListener);
+        m_allocationManager.allocate (serverId, turnServerListener);
         }
     }
