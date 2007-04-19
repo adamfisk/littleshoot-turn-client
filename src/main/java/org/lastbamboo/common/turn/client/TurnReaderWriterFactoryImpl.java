@@ -14,6 +14,7 @@ import org.lastbamboo.common.nio.NioReaderWriter;
 import org.lastbamboo.common.nio.SelectorManager;
 import org.lastbamboo.common.protocol.ProtocolHandler;
 import org.lastbamboo.common.protocol.ReaderWriter;
+import org.lastbamboo.common.util.NetworkUtils;
 import org.lastbamboo.common.util.SocketHandler;
 
 /**
@@ -117,7 +118,7 @@ public final class TurnReaderWriterFactoryImpl implements
         LOG.trace("Connecting to local server with instance: "+this);
         final Socket clientSocket = new Socket();
         final InetSocketAddress localServer =
-            new InetSocketAddress(InetAddress.getLocalHost(), localPort);
+            new InetSocketAddress(NetworkUtils.getLocalHost(), localPort);
 
         clientSocket.connect(localServer, 10000);
 

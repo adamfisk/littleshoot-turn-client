@@ -15,6 +15,7 @@ import org.lastbamboo.common.turn.client.TurnServerWriterImpl;
 import org.lastbamboo.common.turn.client.stub.ReaderWriterStub;
 import org.lastbamboo.common.turn.message.TurnMessageFactory;
 import org.lastbamboo.common.turn.message.TurnMessageFactoryImpl;
+import org.lastbamboo.common.util.NetworkUtils;
 
 /**
  * Tests the class for writing messages to TURN servers.
@@ -39,7 +40,7 @@ public final class TurnServerWriterImplTest extends TestCase
 
         final TurnMessageFactory messageFactory = new TurnMessageFactoryImpl();
         final InetSocketAddress mappedAddress =
-            new InetSocketAddress(InetAddress.getLocalHost(), 4322);
+            new InetSocketAddress(NetworkUtils.getLocalHost(), 4322);
 
         final TurnReaderWriterTracker readerWriterTracker =
             new TurnReaderWriterTrackerImpl();
