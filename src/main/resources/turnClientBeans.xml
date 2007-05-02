@@ -17,7 +17,7 @@
     <bean id="turnLocalProxyPortSetting"
           class="org.springframework.beans.factory.config.FieldRetrievingFactoryBean">
         <property name="staticField">
-            <value>org.lastbamboo.shoot.turn.client.TurnClientSettings.LOCAL_TURN_PROXY_PORT</value>
+            <value>org.lastbamboo.client.sip.turn.TurnClientSettings.LOCAL_TURN_PROXY_PORT</value>
             </property>
         </bean>
 
