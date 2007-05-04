@@ -14,7 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.nio.SelectorManager;
 import org.lastbamboo.common.protocol.ProtocolHandler;
-import org.lastbamboo.common.util.ByteBufferUtil;
+import org.lastbamboo.common.util.ByteBufferUtils;
 
 /**
  * Protocol handler that simply takes data read in from local sockets and 
@@ -148,7 +148,7 @@ public final class TurnProxyProtocolHandler implements ProtocolHandler
     private void sendSplitBuffers(final ByteBuffer buffer)
         {
         // Break up the data into smaller chunks.
-        final Collection buffers = ByteBufferUtil.split(buffer, LENGTH_LIMIT);
+        final Collection buffers = ByteBufferUtils.split(buffer, LENGTH_LIMIT);
         
         final Runnable sendRequestRunner = new Runnable()
             {
