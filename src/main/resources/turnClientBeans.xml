@@ -112,6 +112,12 @@
         </bean>
 
     <!--
+        The object that provides the local turn proxy port to use.
+    -->
+    <bean id="turnLocalPortProvider"
+          class="org.lastbamboo.client.sip.turn.client.LocalTurnPortProvider"/>
+          
+    <!--
         The object that manages address allocations with TURN servers.
     -->
     <bean id="turnAllocationManager"
@@ -129,7 +135,7 @@
             <ref local="turnReaderWriterFactory"/>
             </constructor-arg>
         <constructor-arg index="4">
-            <ref bean="turnLocalPortProvider"/>
+            <ref local="turnLocalPortProvider"/>
             </constructor-arg>
         <property name="socketHandler">
             <ref bean="httpSocketHandler"/>
