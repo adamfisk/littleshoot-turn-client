@@ -1,6 +1,8 @@
 package org.lastbamboo.common.turn.client;
 
 import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -116,6 +118,16 @@ public final class TurnAllocationManagerImpl implements TurnAllocationManager
         public void onConnect
                 (final ReaderWriter readerWriter)
             {
+            final Socket sock = readerWriter.getSocketChannel().socket();
+            try
+                {
+                sock.setKeepAlive(true);
+                }
+            catch (final SocketException e)
+                {
+                LOG.warn("Could not set KEEP ALIVE", e);
+                }
+            
             final TurnReaderWriterTracker tracker =
                     new TurnReaderWriterTrackerImpl ();
 
