@@ -1,9 +1,8 @@
 package org.lastbamboo.common.turn.client;
 
 import java.net.InetSocketAddress;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,8 +29,9 @@ public final class TurnReaderWriterTrackerImpl
      * <code>Map</code> of remote addresses to <code>ReaderWriter</code>s 
      * for processing data from those hosts.
      */
-    private final Map m_remoteAddressesToReaderWriters = 
-        Collections.synchronizedMap(new HashMap());
+    private final Map<InetSocketAddress, ReaderWriter> 
+        m_remoteAddressesToReaderWriters = 
+            new ConcurrentHashMap<InetSocketAddress, ReaderWriter>();
 
     public boolean hasReaderWriter(final InetSocketAddress remoteAddress)
         {
@@ -51,8 +51,7 @@ public final class TurnReaderWriterTrackerImpl
 
     public ReaderWriter getReaderWriter(final InetSocketAddress remoteAddress)
         {
-        return (ReaderWriter) this.m_remoteAddressesToReaderWriters.get(
-            remoteAddress);
+        return this.m_remoteAddressesToReaderWriters.get(remoteAddress);
         }
 
     public void removeReaderWriter(final InetSocketAddress remoteAddress)

@@ -28,29 +28,20 @@ public final class TurnServerTrackerImpl implements TurnServerTracker
      * <code>Set</code> pf <code>TurnServerWriter</code>s for TURN servers 
      * we are currently connected to.
      */
-    private final Set m_turnServers = 
-        Collections.synchronizedSet(new HashSet());
+    private final Set<TurnServerWriter> m_turnServers = 
+        Collections.synchronizedSet(new HashSet<TurnServerWriter>());
     
     /**
      * <code>Collection</code> of <code>InetSocketAddress</code>es for TURN
      * servers we could potentially connect to.
      */
-    private final Set m_turnServerCandidates = 
-        Collections.synchronizedSet(new HashSet());
+    private final Set<InetSocketAddress> m_turnServerCandidates = 
+        Collections.synchronizedSet(new HashSet<InetSocketAddress>());
     
     public void addTurnServer(final TurnServerWriter server)
         {
         LOG.trace("Adding TURN server: "+server);
         this.m_turnServers.add(server);
-        }
-
-    public void addTurnServers(final Collection servers)
-        {
-        LOG.trace("Adding "+servers.size()+" servers...");
-        synchronized(this.m_turnServers)
-            {
-            this.m_turnServers.addAll(servers);
-            }
         }
 
     public void removeTurnServer(final TurnServerWriter server)
@@ -65,7 +56,8 @@ public final class TurnServerTrackerImpl implements TurnServerTracker
         this.m_turnServerCandidates.add(server);
         }
 
-    public void addCandidateTurnServers(final Collection servers)
+    public void addCandidateTurnServers(
+        final Collection<InetSocketAddress> servers)
         {
         synchronized(this.m_turnServerCandidates)
             {

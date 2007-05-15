@@ -29,7 +29,6 @@ public final class AllocateResponseReader extends AbstractTurnMessageHandler
      * Creates a new response handler.
      * @param client The address of the remote host sending the message.
      * @param factory The factory for creating TURN messages.
-     * @param readerWriter The handler for writing message back to the client.
      * @param reader The class for reading TURN message attributes.
      */
     public AllocateResponseReader(final InetSocketAddress client, 

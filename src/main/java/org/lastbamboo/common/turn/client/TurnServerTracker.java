@@ -39,7 +39,7 @@ public interface TurnServerTracker
      * @param servers The addresses of TURN servers to use if 
      * necessary.  These are <code>InetSocketAddress</code>es.
      */
-    void addCandidateTurnServers(final Collection servers);
+    void addCandidateTurnServers(final Collection<InetSocketAddress> servers);
     
     /**
      * Removes the specified address from the group of TURN servers to connect

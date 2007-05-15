@@ -16,20 +16,5 @@ public interface TurnClientSocketCandidate
      * @return The socket.
      */
     Socket getSocket();
-    
-    /**
-     * Returns whether or not another socket consumer is already using this
-     * socket.  In general, only one socket consumer should have access to
-     * a socket at a time.  A web server should not have access to a socket
-     * while a TURN message writer is also using it, for example.
-     * @return
-     */
-    boolean isTaken();
-    
-    /**
-     * Sets whether or not a socket consumer has claimed this socket.
-     * @param taken <code>true</code> if a socket consumer has laid 
-     * exclusive claim to this socket, otherwise <code>false</code>.
-     */
-    void setTaken(final boolean taken);
+
     }

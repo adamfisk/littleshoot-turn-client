@@ -12,7 +12,6 @@ public final class TurnClientSocketCandidateImpl
     {
 
     private final Socket m_socket;
-    private volatile boolean m_taken;
 
     /**
      * Creates a new candidate wrapper for the specified socket.
@@ -27,15 +26,4 @@ public final class TurnClientSocketCandidateImpl
         {
         return this.m_socket;
         }
-
-    public boolean isTaken()
-        {
-        return this.m_taken;
-        }
-
-    public void setTaken(final boolean taken)
-        {
-        this.m_taken = taken;
-        }
-
     }
