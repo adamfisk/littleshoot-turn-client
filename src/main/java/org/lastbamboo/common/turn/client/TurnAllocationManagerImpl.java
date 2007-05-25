@@ -17,7 +17,7 @@ import org.lastbamboo.common.turn.message.TurnMessage;
 import org.lastbamboo.common.turn.message.TurnMessageFactory;
 import org.lastbamboo.common.turn.message.TurnMessageVisitor;
 import org.lastbamboo.common.turn.message.handler.TurnMessageHandlerFactory;
-import org.lastbamboo.common.util.FuncWithReturn;
+import org.lastbamboo.common.util.F0;
 import org.lastbamboo.common.util.SocketHandler;
 
 /**
@@ -54,7 +54,7 @@ public final class TurnAllocationManagerImpl implements TurnAllocationManager
     /**
      * TODO.
      */
-    private final FuncWithReturn<Integer> m_portProvider;
+    private final F0<Integer> m_portProvider;
 
     /**
      * TODO.
@@ -69,7 +69,7 @@ public final class TurnAllocationManagerImpl implements TurnAllocationManager
              final ServerConnector serverConnector,
              final TurnMessageHandlerFactory messageHandlerFactory,
              final TurnReaderWriterFactory turnSocketFactory,
-             final FuncWithReturn<Integer> portProvider)
+             final F0<Integer> portProvider)
         {
         m_turnMessageFactory = messageFactory;
         m_turnServerConnector = serverConnector;

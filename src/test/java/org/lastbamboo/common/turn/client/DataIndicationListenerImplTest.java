@@ -31,7 +31,7 @@ import org.lastbamboo.common.turn.message.DataIndicationImpl;
 import org.lastbamboo.common.turn.message.TurnMessageFactoryImpl;
 import org.lastbamboo.common.turn.message.attribute.TurnAttributeFactory;
 import org.lastbamboo.common.turn.message.attribute.TurnAttributeFactoryImpl;
-import org.lastbamboo.common.util.FuncWithReturn;
+import org.lastbamboo.common.util.F0;
 import org.lastbamboo.common.util.SocketHandler;
 
 /**
@@ -75,8 +75,8 @@ public final class DataIndicationListenerImplTest extends TestCase
             new NioServerImpl(localPort, acceptSelector, factory);
         server.startServer();
         
-        final FuncWithReturn<Integer> portProvider =
-                new FuncWithReturn<Integer>()
+        final F0<Integer> portProvider =
+                new F0<Integer>()
             { 
             public Integer run
                     ()

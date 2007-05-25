@@ -7,7 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.protocol.ReaderWriter;
 import org.lastbamboo.common.turn.message.DataIndication;
-import org.lastbamboo.common.util.FuncWithReturn;
+import org.lastbamboo.common.util.F0;
 import org.lastbamboo.common.util.SocketHandler;
 
 /**
@@ -39,7 +39,7 @@ public final class DataIndicationListenerImpl implements DataIndicationListener
     /**
      * The function that returns the port to use for sockets when creating reader/writers.
      */
-    private final FuncWithReturn<Integer> m_portProvider;
+    private final F0<Integer> m_portProvider;
 
 
     /**
@@ -54,7 +54,7 @@ public final class DataIndicationListenerImpl implements DataIndicationListener
         final TurnReaderWriterTracker turnSocketTracker,
         final TurnReaderWriterFactory turnSocketFactory,
         final SocketHandler socketHandler,
-        final FuncWithReturn<Integer> portProvider)
+        final F0<Integer> portProvider)
         {
         this.m_turnReaderWriterTracker = turnSocketTracker;
         this.m_turnReaderWriterFactory = turnSocketFactory;
