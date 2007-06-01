@@ -8,7 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.protocol.CloseListener;
 import org.lastbamboo.common.protocol.ReaderWriter;
-import org.lastbamboo.common.protocol.ReaderWriterUtils;
+import org.lastbamboo.common.util.MapUtils;
 
 /**
  * Class that keeps track of <code>ReaderWriter</code>s to the locally running
@@ -63,7 +63,7 @@ public final class TurnReaderWriterTrackerImpl
     public void onClose(final ReaderWriter readerWriter)
         {
         LOG.debug("Closing ReaderWriter: "+readerWriter);
-        ReaderWriterUtils.removeFromMapValues(
+        MapUtils.removeFromMapValues(
             this.m_remoteAddressesToReaderWriters, readerWriter);
         }
     
