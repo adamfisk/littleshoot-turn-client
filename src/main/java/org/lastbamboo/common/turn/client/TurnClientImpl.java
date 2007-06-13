@@ -1,58 +1,259 @@
 package org.lastbamboo.common.turn.client;
-import java.util.Collection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.lastbamboo.common.util.ConnectionMaintainer;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.mina.common.ByteBuffer;
+import org.apache.mina.common.ConnectFuture;
+import org.apache.mina.common.IoConnector;
+import org.apache.mina.common.IoConnectorConfig;
+import org.apache.mina.common.IoFuture;
+import org.apache.mina.common.IoFutureListener;
+import org.apache.mina.common.IoHandler;
+import org.apache.mina.common.IoHandlerAdapter;
+import org.apache.mina.common.IoService;
+import org.apache.mina.common.IoServiceConfig;
+import org.apache.mina.common.IoServiceListener;
+import org.apache.mina.common.IoSession;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.filter.codec.ProtocolDecoder;
+import org.apache.mina.filter.codec.ProtocolEncoder;
+import org.apache.mina.transport.socket.nio.SocketConnector;
+import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
+import org.lastbamboo.client.util.settings.HttpSettings;
+import org.lastbamboo.common.stun.stack.decoder.StunMessageDecodingState;
+import org.lastbamboo.common.stun.stack.encoder.StunProtocolEncoder;
+import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
+import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
+import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
+import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
+import org.lastbamboo.common.stun.stack.message.turn.SendIndication;
+import org.lastbamboo.common.stun.stack.message.turn.SuccessfulAllocateResponse;
+import org.lastbamboo.common.util.ConnectionMaintainerListener;
+import org.lastbamboo.common.util.mina.MinaUtils;
+import org.lastbamboo.common.util.mina.StateMachineProtocolDecoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Implementation of the TURN client facade, providing an API for external
- * code to use TURN client services.  This primarily dispatches tasks to
- * underlying collaborating classes.
+ * Class that handles all responsibilities of a TURN client.  It does this in
+ * a couple of ways.  First, it opens a connection to the TURN server and
+ * allocates a binding on the TURN server.  Second, it decodes 
+ * Data Indication messages arriving from the TURN server. When it receives
+ * a message, it creates sockets to the local HTTP server and forwards the
+ * data (HTTP data) enclosed in the Data Indication to the local HTTP
+ * server.<p>
+ * 
+ * If this ever loses the connection to the TURN server, it notifies the
+ * listener that maintains TURN connections.
  */
-public final class TurnClientImpl implements TurnClient
+public class TurnClientImpl extends StunMessageVisitorAdapter 
+    implements TurnClient, IoServiceListener
     {
+    
+    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    private final ConnectionMaintainerListener<InetSocketAddress> m_listener;
+    private final SocketConnector m_connector;
+    
+    private final InetSocketAddress m_turnServerAddress;
+    
+    private final Map<InetSocketAddress, IoSession> m_addressesToSessions =
+        new ConcurrentHashMap<InetSocketAddress, IoSession>();
+    private IoSession m_ioSession;
+    
     /**
-     * Logger for this class.
+     * This is the limit on the length of the data to encapsulate in a Send
+     * Request.  TURN messages cannot be larger than 0xffff, so this leaves 
+     * room for other attributes in the message as well as for headers.
      */
-    private static final Log LOG = LogFactory.getLog (TurnClientImpl.class);
-
-    /**
-     * The connection maintainer used to maintain connections to TURN servers.
-     */
-    private final ConnectionMaintainer m_connectionMaintainer;
+    private static final int LENGTH_LIMIT = 0xffff - 1000;
 
     /**
      * Creates a new TURN client.
-     *
-     * @param connectionMaintainer
-     *      The manager for managing binding allocations on TURN servers.
+     * 
+     * @param listener The listener for connection events to this server.
+     * @param turnServerAddress The address of the server to connect to.
      */
-    public TurnClientImpl(final ConnectionMaintainer connectionMaintainer)
+    public TurnClientImpl(
+        final ConnectionMaintainerListener<InetSocketAddress> listener,
+        final InetSocketAddress turnServerAddress)
         {
-        m_connectionMaintainer = connectionMaintainer;
+        m_listener = listener;
+        m_turnServerAddress = turnServerAddress;
+        m_connector = new SocketConnector();
+        
+        // This will encode Allocate Requests and Send Indications.
+        final ProtocolEncoder encoder = new StunProtocolEncoder();
+        final ProtocolDecoder decoder = 
+            new StateMachineProtocolDecoder(new StunMessageDecodingState());
+        final ProtocolCodecFilter stunFilter = 
+            new ProtocolCodecFilter(encoder, decoder);
+        m_connector.getFilterChain().addLast("codec", stunFilter);
+        m_connector.addListener(this);
+        }
+    
+    public InetSocketAddress getTurnServerAddress()
+        {
+        return this.m_turnServerAddress;
         }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void start()
+    public void connect()
         {
-        LOG.trace ("Starting TURN client");
+        final IoConnectorConfig config = new SocketConnectorConfig();
+        final IoHandler handler = new TurnClientIoHandler(this);
+        final ConnectFuture connectFuture = 
+            m_connector.connect(m_turnServerAddress, handler, config);
+        
+        final IoFutureListener futureListener = new IoFutureListener()
+            {
+            public void operationComplete(final IoFuture ioFuture)
+                {
+                m_ioSession = ioFuture.getSession();
+                if (m_ioSession.isConnected())
+                    {
+                    final AllocateRequest msg = new AllocateRequest();
+    
+                    LOG.debug ("Sending allocate request to write handler...");
+                    m_ioSession.write(msg);
+                    }
+                else
+                    {
+                    LOG.debug("Connect failed for: {}", m_ioSession);
+                    m_listener.connectionFailed ();
+                    }
+                }
+            };
+            
+        connectFuture.addListener(futureListener);
+        }
+    
 
-        // We start the connection maintainer.
-        m_connectionMaintainer.start ();
+    public void visitSuccessfulAllocateResponse(
+        final SuccessfulAllocateResponse response)
+        {
+        LOG.debug("Visiting unexpected message: {}", response);
+        this.m_listener.connected(this.m_turnServerAddress);
+        }
+    
+    public void visitConnectionStatusIndication(
+        final ConnectionStatusIndication indication)
+        {
+        LOG.debug("Visiting unexpected message: {}", indication);
         }
 
-    /**
-     * {@inheritDoc}
-     */
-    public Collection getTurnServers()
+    public void visitDataIndication(final DataIndication data)
         {
-        LOG.debug ("Connected servers size: " +
-                        m_connectionMaintainer.getConnectedServers ().size ());
+        LOG.debug("Visiting Data Indication message: {}", data);
+        final InetSocketAddress remoteAddress = data.getRemoteAddress();
+        final IoSession session = getSessionForRemoteAddress(remoteAddress);
+        session.write(ByteBuffer.wrap(data.getData()));
+        }
 
-        // This can return null.
-        return (m_connectionMaintainer.getConnectedServers ());
+    private IoSession getSessionForRemoteAddress(
+        final InetSocketAddress remoteAddress)
+        {
+        // We don't synchronize here because we're processing data from
+        // a single TCP connection.
+        if (m_addressesToSessions.containsKey(remoteAddress))
+            {
+            // This is the connection from the local proxy server to the 
+            // local client.  So we're essentially writing to our local
+            // we server.
+            return m_addressesToSessions.get(remoteAddress);
+            }
+        else
+            {
+            final IoConnector connector = new SocketConnector();
+            final InetSocketAddress localServer = 
+                new InetSocketAddress("127.0.0.1", 
+                    HttpSettings.HTTP_PORT.getValue());
+            final IoHandler handler = new IoHandlerAdapter() 
+                {
+                public void messageReceived(final IoSession session, 
+                    final Object message) throws Exception
+                    {
+                    // This is data received from the local HTTP server --
+                    // the raw data of an HTTP response.  It might be
+                    // larger than the maximum allowed size for TURN messages,
+                    // so we make sure to split it up.
+                    final ByteBuffer in = (ByteBuffer) message;
+                    
+                    // Send the data broken up into chunks if necessary.  This 
+                    // is because TURN messages cannot be larger than 0xffff.
+                    sendSplitBuffers(remoteAddress, in);
+                    }
+                
+                public void sessionClosed(final IoSession session) 
+                    throws Exception
+                    {
+                    m_addressesToSessions.remove(remoteAddress);
+                    }
+                
+                /**
+                 * Splits the main read buffer into smaller buffers that will 
+                 * fit in TURN messages.
+                 * 
+                 * @param remoteHost The host the data came from.
+                 * @param buffer The main read buffer to split.
+                 * @param session The session for reading and writing data.
+                 * @param nextFilter The next class for processing the message.
+                 */
+                private void sendSplitBuffers(
+                    final InetSocketAddress remoteHost, final ByteBuffer buffer)
+                    {
+                    // Break up the data into smaller chunks.
+                    final Collection<byte[]> buffers = 
+                        MinaUtils.splitToByteArrays(buffer, LENGTH_LIMIT);
+                    for (final byte[] data : buffers)
+                        {
+                        final SendIndication indication = 
+                            new SendIndication(remoteHost, data);
+                        m_ioSession.write(indication);
+                        }
+                    }
+                };
+                
+            final ConnectFuture ioFuture = 
+                connector.connect(localServer, handler);
+            
+            // We're just connecting locally, so it should be much quicker 
+            // than this unless there's something wrong.
+            ioFuture.join(6000);
+            final IoSession session = ioFuture.getSession();
+            if (!session.isConnected())
+                {
+                LOG.error("Could not connect to HTTP server!!");
+                }
+            this.m_addressesToSessions.put(remoteAddress, session);
+            return session;
+            }
+        }
+
+    public void serviceActivated(final IoService service, 
+        final SocketAddress serviceAddress, final IoHandler handler, 
+        final IoServiceConfig config)
+        {
+        LOG.debug("Service activated...");
+        }
+
+    public void serviceDeactivated(final IoService service, 
+        final SocketAddress serviceAddress, final IoHandler handler, 
+        final IoServiceConfig config)
+        {
+        LOG.debug("Service deactivated...");
+        }
+
+    public void sessionCreated(final IoSession session)
+        {
+        LOG.debug("Session created...");
+        }
+
+    public void sessionDestroyed(final IoSession session)
+        {
+        LOG.debug("Session destroyed...");
+        this.m_listener.disconnected();
         }
     }
