@@ -4,15 +4,21 @@ import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoHandler;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
+import org.apache.mina.util.SessionUtil;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitor;
 import org.lastbamboo.common.stun.stack.message.VisitableStunMessage;
+import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * {@link IoHandler} for the TURN proxy client.
+ * {@link IoHandler} for the TURN client connection to the TURN server.
  */
 public class TurnClientIoHandler extends IoHandlerAdapter
     {
 
+    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    
     private final StunMessageVisitor m_visitor;
 
     /**
@@ -36,11 +42,22 @@ public class TurnClientIoHandler extends IoHandlerAdapter
         {
         // This is taken care of through an IoServiceListener.
         }
+    
+    public void sessionCreated(final IoSession session) throws Exception
+        {
+        SessionUtil.initialize(session);
+        
+        // The idle time is in seconds.  Many NATs kill TCP bindings after 
+        // about 10 minutes, although there's a lot of variation between
+        // implementations.
+        session.setIdleTime(IdleStatus.BOTH_IDLE, 60 * 4);
+        }
 
     public void sessionIdle(final IoSession session, final IdleStatus status) 
         throws Exception
         {
-        // TODO: We want to issue a keep alive message here, although we have
-        // to tune what is considered "idle".
+        LOG.debug("Session idle...issue new Allocate Request...");
+        final AllocateRequest request = new AllocateRequest();
+        session.write(request);
         }
     }
