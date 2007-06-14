@@ -129,7 +129,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
         connectFuture.addListener(futureListener);
         }
     
-    public void connectToRemoteHost(final InetSocketAddress remoteAddress)
+    public void sendConnectRequest(final InetSocketAddress remoteAddress)
         {
         final ConnectRequest request = new ConnectRequest(remoteAddress);
         this.m_ioSession.write(request);

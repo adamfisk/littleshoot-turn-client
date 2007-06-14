@@ -34,6 +34,6 @@ public interface TurnClient
      * 
      * @param remoteAddress The address of the remote host.
      */
-    void connectToRemoteHost(InetSocketAddress remoteAddress);
+    void sendConnectRequest(InetSocketAddress remoteAddress);
 
     }
