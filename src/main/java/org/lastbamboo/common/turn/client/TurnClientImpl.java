@@ -138,8 +138,10 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
     public void visitSuccessfulAllocateResponse(
         final SuccessfulAllocateResponse response)
         {
-        this.m_listener.connected(this.m_turnServerAddress);
+        // We need to set the allocated address before notifying the 
+        // listener we're "connected".
         this.m_allocatedAddress = response.getMappedAddress();
+        this.m_listener.connected(this.m_turnServerAddress);
         }
     
     public void visitConnectionStatusIndication(
