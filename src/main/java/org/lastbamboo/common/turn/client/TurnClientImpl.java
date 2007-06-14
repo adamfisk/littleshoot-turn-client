@@ -19,6 +19,7 @@ import org.apache.mina.common.IoService;
 import org.apache.mina.common.IoServiceConfig;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
+import org.apache.mina.common.RuntimeIOException;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.ProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolEncoder;
@@ -111,7 +112,22 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
             {
             public void operationComplete(final IoFuture ioFuture)
                 {
-                m_ioSession = ioFuture.getSession();
+                if (!ioFuture.isReady())
+                    {
+                    LOG.warn("Future not ready?");
+                    return;
+                    }
+                try
+                    {
+                    m_ioSession = ioFuture.getSession();
+                    }
+                catch (final RuntimeIOException e)
+                    {
+                    // This seems to get thrown when we can't connect at all.
+                    LOG.warn("Could not connect to TURN server at: {}", 
+                        serverAddress, e);
+                    return;
+                    }
                 if (m_ioSession.isConnected())
                     {
                     final AllocateRequest msg = new AllocateRequest();
@@ -128,6 +144,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
             };
             
         connectFuture.addListener(futureListener);
+        connectFuture.join();
         }
     
     public void close()
