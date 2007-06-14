@@ -36,4 +36,9 @@ public interface TurnClient
      */
     void sendConnectRequest(InetSocketAddress remoteAddress);
 
+    /**
+     * Closes this client's connection to the TURN server.
+     */
+    void close();
+
     }

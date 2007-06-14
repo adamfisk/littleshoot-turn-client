@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.mina.common.ByteBuffer;
+import org.apache.mina.common.CloseFuture;
 import org.apache.mina.common.ConnectFuture;
 import org.apache.mina.common.IoConnector;
 import org.apache.mina.common.IoConnectorConfig;
@@ -127,6 +128,12 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
             };
             
         connectFuture.addListener(futureListener);
+        }
+    
+    public void close()
+        {
+        final CloseFuture closeFuture = this.m_ioSession.close();
+        closeFuture.join();
         }
     
     public void sendConnectRequest(final InetSocketAddress remoteAddress)
