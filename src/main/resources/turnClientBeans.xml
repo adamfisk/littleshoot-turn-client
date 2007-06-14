@@ -2,4 +2,12 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
+    <!--
+        The object that establishes TURN server connections.  This is the
+        interface used by the connection maintainer to maintain multiple TURN
+        server connections.
+    -->
+    <bean id="turnServerConnectionEstablisher"
+          class="org.lastbamboo.common.turn.client.TurnServerConnectionEstablisher">
+        </bean>
     </beans>

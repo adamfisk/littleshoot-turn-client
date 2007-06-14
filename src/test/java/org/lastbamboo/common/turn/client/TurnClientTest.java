@@ -84,9 +84,8 @@ public class TurnClientTest extends TestCase
             };
         final InetSocketAddress localServer = 
             new InetSocketAddress("127.0.0.1", 3478);
-        final TurnClient client = 
-            new TurnClientImpl(listener, localServer);
-        client.connect();
+        final TurnClient client = new TurnClientImpl();
+        client.connect(listener, localServer);
         
         synchronized (this)
             {

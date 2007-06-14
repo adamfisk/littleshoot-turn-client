@@ -55,10 +55,10 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
     {
     
     private final Logger LOG = LoggerFactory.getLogger(getClass());
-    private final ConnectionMaintainerListener<InetSocketAddress> m_listener;
+    private ConnectionMaintainerListener<InetSocketAddress> m_listener;
     private final SocketConnector m_connector;
     
-    private final InetSocketAddress m_turnServerAddress;
+    private InetSocketAddress m_turnServerAddress;
     
     private final Map<InetSocketAddress, IoSession> m_addressesToSessions =
         new ConcurrentHashMap<InetSocketAddress, IoSession>();
@@ -73,16 +73,9 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
 
     /**
      * Creates a new TURN client.
-     * 
-     * @param listener The listener for connection events to this server.
-     * @param turnServerAddress The address of the server to connect to.
      */
-    public TurnClientImpl(
-        final ConnectionMaintainerListener<InetSocketAddress> listener,
-        final InetSocketAddress turnServerAddress)
+    public TurnClientImpl()
         {
-        m_listener = listener;
-        m_turnServerAddress = turnServerAddress;
         m_connector = new SocketConnector();
         
         // This will encode Allocate Requests and Send Indications.
@@ -100,8 +93,12 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
         return this.m_turnServerAddress;
         }
 
-    public void connect()
+    public void connect(
+        final ConnectionMaintainerListener<InetSocketAddress> listener, 
+        final InetSocketAddress serverAddress)
         {
+        m_listener = listener;
+        m_turnServerAddress = serverAddress;
         final IoConnectorConfig config = new SocketConnectorConfig();
         final IoHandler handler = new TurnClientIoHandler(this);
         final ConnectFuture connectFuture = 
