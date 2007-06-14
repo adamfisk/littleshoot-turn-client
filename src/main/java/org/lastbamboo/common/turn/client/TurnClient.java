@@ -21,10 +21,19 @@ public interface TurnClient
         InetSocketAddress serverAddress);
 
     /**
-     * Accesses the address of the TURN server.
+     * Accesses the allocated address for this TURN client on the TURN server.
      * 
-     * @return The address of the TURN server.
+     * @return The address the TURN server allocated on this client's behalf.
      */
-    InetSocketAddress getTurnServerAddress();
+    InetSocketAddress getAllocatedAddress();
+
+    /**
+     * Tells the client to send a Connect Request for the specified remote
+     * address, telling the TURN server to attempt to connect to the specified
+     * address and to allow incoming connections from that address.
+     * 
+     * @param remoteAddress The address of the remote host.
+     */
+    void connectToRemoteHost(InetSocketAddress remoteAddress);
 
     }

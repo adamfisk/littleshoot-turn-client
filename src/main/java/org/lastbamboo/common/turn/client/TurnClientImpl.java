@@ -28,6 +28,7 @@ import org.lastbamboo.common.stun.stack.decoder.StunMessageDecodingState;
 import org.lastbamboo.common.stun.stack.encoder.StunProtocolEncoder;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
 import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
+import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.stun.stack.message.turn.SendIndication;
@@ -63,6 +64,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
     private final Map<InetSocketAddress, IoSession> m_addressesToSessions =
         new ConcurrentHashMap<InetSocketAddress, IoSession>();
     private IoSession m_ioSession;
+    private InetSocketAddress m_allocatedAddress;
     
     /**
      * This is the limit on the length of the data to encapsulate in a Send
@@ -88,9 +90,9 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
         m_connector.addListener(this);
         }
     
-    public InetSocketAddress getTurnServerAddress()
+    public InetSocketAddress getAllocatedAddress()
         {
-        return this.m_turnServerAddress;
+        return this.m_allocatedAddress;
         }
 
     public void connect(
@@ -127,18 +129,23 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
         connectFuture.addListener(futureListener);
         }
     
+    public void connectToRemoteHost(final InetSocketAddress remoteAddress)
+        {
+        final ConnectRequest request = new ConnectRequest(remoteAddress);
+        this.m_ioSession.write(request);
+        }
 
     public void visitSuccessfulAllocateResponse(
         final SuccessfulAllocateResponse response)
         {
-        LOG.debug("Visiting unexpected message: {}", response);
         this.m_listener.connected(this.m_turnServerAddress);
+        this.m_allocatedAddress = response.getMappedAddress();
         }
     
     public void visitConnectionStatusIndication(
         final ConnectionStatusIndication indication)
         {
-        LOG.debug("Visiting unexpected message: {}", indication);
+        LOG.debug("Visiting connection status message: {}", indication);
         }
 
     public void visitDataIndication(final DataIndication data)
@@ -163,6 +170,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
             }
         else
             {
+            LOG.debug("Opening new local socket...");
             final IoConnector connector = new SocketConnector();
             final InetSocketAddress localServer = 
                 new InetSocketAddress("127.0.0.1", 
@@ -253,4 +261,5 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
         LOG.debug("Session destroyed...");
         this.m_listener.disconnected();
         }
+
     }
