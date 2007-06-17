@@ -2,6 +2,14 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
+
+    <!--
+        The TURN client.
+    -->
+    <bean id="turnClient"
+          class="org.lastbamboo.common.turn.client.TurnClientImpl">
+        </bean>
+        
     <!--
         The object that establishes TURN server connections.  This is the
         interface used by the connection maintainer to maintain multiple TURN
@@ -10,4 +18,23 @@
     <bean id="turnServerConnectionEstablisher"
           class="org.lastbamboo.common.turn.client.TurnServerConnectionEstablisher">
         </bean>
+        
+        
+    <!--
+        The object that provides candidate TURN servers to which to connect.
+    -->
+    <bean id="turnServerCandidateProvider"
+          class="org.lastbamboo.common.turn.client.TurnServerCandidateProvider">
+        </bean>
+
+    <!--
+        The object that establishes maintains TURN server connections.
+    -->
+    <bean id="turnConnectionMaintainer"
+          class="org.lastbamboo.common.util.ConnectionMaintainerImpl">
+        <constructor-arg><ref bean="threadUtils"/></constructor-arg>
+        <constructor-arg><ref local="turnServerConnectionEstablisher"/></constructor-arg>
+        <constructor-arg><ref local="turnServerCandidateProvider"/></constructor-arg>
+        </bean>
+        
     </beans>
