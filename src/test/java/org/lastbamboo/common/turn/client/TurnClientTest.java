@@ -8,20 +8,20 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
+import junit.framework.TestCase;
+
 import org.apache.commons.id.uuid.UUID;
 import org.apache.mina.common.ByteBuffer;
-import org.lastbamboo.client.util.settings.HttpSettings;
 import org.lastbamboo.common.stun.stack.encoder.StunMessageEncoder;
 import org.lastbamboo.common.stun.stack.message.StunMessageType;
 import org.lastbamboo.common.stun.stack.message.attributes.StunAttributeType;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.stun.stack.message.turn.SuccessfulAllocateResponse;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
+import org.lastbamboo.common.util.ShootConstants;
 import org.lastbamboo.common.util.mina.MinaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import junit.framework.TestCase;
 
 /**
  * Test for the TURN client.
@@ -302,8 +302,7 @@ public class TurnClientTest extends TestCase
 
     private void startHttpServer() throws Exception
         {
-        final ServerSocket server = 
-            new ServerSocket(HttpSettings.HTTP_PORT.getValue());
+        final ServerSocket server = new ServerSocket(ShootConstants.HTTP_PORT);
         final Socket client = server.accept();
         final InputStream is = client.getInputStream();
         final Scanner scan = new Scanner(is);

@@ -25,7 +25,6 @@ import org.apache.mina.filter.codec.ProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
-import org.lastbamboo.client.util.settings.HttpSettings;
 import org.lastbamboo.common.stun.stack.decoder.StunMessageDecodingState;
 import org.lastbamboo.common.stun.stack.encoder.StunProtocolEncoder;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
@@ -36,6 +35,7 @@ import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.stun.stack.message.turn.SendIndication;
 import org.lastbamboo.common.stun.stack.message.turn.SuccessfulAllocateResponse;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
+import org.lastbamboo.common.util.ShootConstants;
 import org.lastbamboo.common.util.mina.MinaUtils;
 import org.lastbamboo.common.util.mina.StateMachineProtocolDecoder;
 import org.slf4j.Logger;
@@ -200,8 +200,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
             LOG.debug("Opening new local socket...");
             final IoConnector connector = new SocketConnector();
             final InetSocketAddress localServer = 
-                new InetSocketAddress("127.0.0.1", 
-                    HttpSettings.HTTP_PORT.getValue());
+                new InetSocketAddress("127.0.0.1", ShootConstants.HTTP_PORT);
             final IoHandler handler = new IoHandlerAdapter() 
                 {
                 public void messageReceived(final IoSession session, 
