@@ -19,7 +19,19 @@ public final class TurnServerConnectionEstablisher
      */
     private static final Log LOG =
         LogFactory.getLog (TurnServerConnectionEstablisher.class);
+    private final TurnClient m_client;
 
+    /**
+     * Creates a new class for creating a TURN connection using the specified
+     * TURN client.
+     * 
+     * @param client The TURN client class.
+     */
+    public TurnServerConnectionEstablisher(final TurnClient client)
+        {
+        m_client = client;
+        }
+    
     /**
      * {@inheritDoc}
      */
@@ -28,8 +40,6 @@ public final class TurnServerConnectionEstablisher
              final ConnectionMaintainerListener<InetSocketAddress> listener)
         {
         LOG.debug ("Establishing connection to: " + serverId);
-
-        final TurnClient client = new TurnClientImpl();
-        client.connect(listener, serverId);
+        this.m_client.connect(listener, serverId);
         }
     }
