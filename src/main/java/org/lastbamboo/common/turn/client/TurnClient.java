@@ -25,7 +25,7 @@ public interface TurnClient
      * 
      * @return The address the TURN server allocated on this client's behalf.
      */
-    InetSocketAddress getAllocatedAddress();
+    InetSocketAddress getRelayAddress();
 
     /**
      * Tells the client to send a Connect Request for the specified remote
@@ -40,5 +40,13 @@ public interface TurnClient
      * Closes this client's connection to the TURN server.
      */
     void close();
+
+    /**
+     * Accesses the MAPPED ADDRESS attribute returned from the TURN server.
+     * This is the server reflexive, or public address.
+     * 
+     * @return The address and port returned in the MAPPED ADDRESS attribute.
+     */
+    InetSocketAddress getMappedAddress();
 
     }

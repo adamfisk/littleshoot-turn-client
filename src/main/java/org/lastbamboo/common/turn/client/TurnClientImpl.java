@@ -66,7 +66,8 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
     private final Map<InetSocketAddress, IoSession> m_addressesToSessions =
         new ConcurrentHashMap<InetSocketAddress, IoSession>();
     private IoSession m_ioSession;
-    private InetSocketAddress m_allocatedAddress;
+    private InetSocketAddress m_relayAddress;
+    private InetSocketAddress m_mappedAddress;
     
     /**
      * This is the limit on the length of the data to encapsulate in a Send
@@ -90,11 +91,6 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
             new ProtocolCodecFilter(encoder, decoder);
         m_connector.getFilterChain().addLast("codec", stunFilter);
         m_connector.addListener(this);
-        }
-    
-    public InetSocketAddress getAllocatedAddress()
-        {
-        return this.m_allocatedAddress;
         }
 
     public void connect(
@@ -158,14 +154,25 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
         final ConnectRequest request = new ConnectRequest(remoteAddress);
         this.m_ioSession.write(request);
         }
+    
+    public InetSocketAddress getRelayAddress()
+        {
+        return this.m_relayAddress;
+        }
+    
+    public InetSocketAddress getMappedAddress()
+        {
+        return this.m_mappedAddress;
+        }
 
     public void visitSuccessfulAllocateResponse(
         final SuccessfulAllocateResponse response)
         {
         LOG.debug("Got successful allocate response: {}", response);
-        // We need to set the allocated address before notifying the 
+        // We need to set the relay address before notifying the 
         // listener we're "connected".
-        this.m_allocatedAddress = response.getMappedAddress();
+        this.m_relayAddress = response.getRelayAddress();
+        this.m_mappedAddress = response.getMappedAddress();
         this.m_listener.connected(this.m_turnServerAddress);
         }
     
@@ -287,5 +294,4 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
         LOG.debug("Session destroyed...");
         this.m_listener.disconnected();
         }
-
     }

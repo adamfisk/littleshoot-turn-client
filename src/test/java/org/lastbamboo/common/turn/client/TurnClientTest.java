@@ -192,9 +192,12 @@ public class TurnClientTest extends TestCase
         LOG.debug("Got trans ID");
         
         final OutputStream os = client.getOutputStream();
-        final InetSocketAddress random = new InetSocketAddress(42314);
+        final InetSocketAddress randomRelayAddress = 
+            new InetSocketAddress(42314);
         final SuccessfulAllocateResponse sar = 
-            new SuccessfulAllocateResponse(new UUID(transactionId), random);
+            new SuccessfulAllocateResponse(new UUID(transactionId), 
+                randomRelayAddress, 
+                (InetSocketAddress)client.getRemoteSocketAddress());
         final StunMessageEncoder encoder = new StunMessageEncoder();
         final ByteBuffer encodedResponse = encoder.encode(sar);
         os.write(MinaUtils.toByteArray(encodedResponse));
