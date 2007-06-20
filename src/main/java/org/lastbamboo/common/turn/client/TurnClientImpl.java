@@ -229,6 +229,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
                 public void sessionClosed(final IoSession session) 
                     throws Exception
                     {
+                    LOG.debug("Received session closed!!");
                     m_addressesToSessions.remove(remoteAddress);
                     }
                 
@@ -244,6 +245,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
                 private void sendSplitBuffers(
                     final InetSocketAddress remoteHost, final ByteBuffer buffer)
                     {
+                    LOG.debug("Sending split buffers!!");
                     // Break up the data into smaller chunks.
                     final Collection<byte[]> buffers = 
                         MinaUtils.splitToByteArrays(buffer, LENGTH_LIMIT);
