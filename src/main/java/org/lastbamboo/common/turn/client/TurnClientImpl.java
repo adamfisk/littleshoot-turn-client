@@ -14,7 +14,6 @@ import org.apache.mina.common.IoConnectorConfig;
 import org.apache.mina.common.IoFuture;
 import org.apache.mina.common.IoFutureListener;
 import org.apache.mina.common.IoHandler;
-import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoService;
 import org.apache.mina.common.IoServiceConfig;
 import org.apache.mina.common.IoServiceListener;
@@ -28,15 +27,14 @@ import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.lastbamboo.common.stun.stack.decoder.StunMessageDecodingState;
 import org.lastbamboo.common.stun.stack.encoder.StunProtocolEncoder;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
+import org.lastbamboo.common.stun.stack.message.attributes.turn.ConnectionStatus;
 import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
-import org.lastbamboo.common.stun.stack.message.turn.SendIndication;
 import org.lastbamboo.common.stun.stack.message.turn.SuccessfulAllocateResponse;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
 import org.lastbamboo.common.util.ShootConstants;
-import org.lastbamboo.common.util.mina.MinaUtils;
 import org.lastbamboo.common.util.mina.StateMachineProtocolDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * listener that maintains TURN connections.
  */
 public class TurnClientImpl extends StunMessageVisitorAdapter 
-    implements TurnClient, IoServiceListener
+    implements TurnClient, IoServiceListener, TurnLocalSessionListener
     {
     
     private final Logger LOG = LoggerFactory.getLogger(getClass());
@@ -70,13 +68,6 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
     private InetSocketAddress m_mappedAddress;
     private boolean m_receivedAllocateResponse;
     
-    /**
-     * This is the limit on the length of the data to encapsulate in a Send
-     * Request.  TURN messages cannot be larger than 0xffff, so this leaves 
-     * room for other attributes in the message as well as for headers.
-     */
-    private static final int LENGTH_LIMIT = 0xffff - 1000;
-
     /**
      * Creates a new TURN client.
      */
@@ -123,6 +114,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
                     // This seems to get thrown when we can't connect at all.
                     LOG.warn("Could not connect to TURN server at: {}", 
                         serverAddress, e);
+                    m_listener.connectionFailed();
                     return;
                     }
                 if (m_ioSession.isConnected())
@@ -135,7 +127,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
                 else
                     {
                     LOG.debug("Connect failed for: {}", m_ioSession);
-                    m_listener.connectionFailed ();
+                    m_listener.connectionFailed();
                     }
                 }
             };
@@ -182,6 +174,40 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
         final ConnectionStatusIndication indication)
         {
         LOG.debug("Visiting connection status message: {}", indication);
+        final ConnectionStatus status = indication.getConnectionStatus();
+        final InetSocketAddress remoteAddress = indication.getRemoteAddress();
+        switch (status)
+            {
+            case CLOSED:
+                LOG.debug("Got connection closed from: "+remoteAddress);
+                if (!this.m_addressesToSessions.containsKey(remoteAddress))
+                    {
+                    // This would be odd -- could indicate someone fiddling
+                    // with our servers?
+                    LOG.warn("We don't know about the remote address: "+
+                        remoteAddress);
+                    }
+                else
+                    {
+                    LOG.debug("Closing connection to local HTTP server...");
+                    final IoSession session = 
+                        this.m_addressesToSessions.remove(remoteAddress);
+                    
+                    // Stop the local session.  In particular, it the session
+                    // is in the middle of an HTTP transfer, this will stop
+                    // the HTTP server from sending more data to a host that's
+                    // no longer there on the other end.
+                    session.close();
+                    }
+                break;
+            case ESTABLISHED:
+                LOG.debug("Connection established from: "+remoteAddress);
+                break;
+            case LISTEN:
+                LOG.debug("Got server listening for incoming data from: "+
+                    remoteAddress);
+                break;
+            }
         }
 
     public void visitDataIndication(final DataIndication data)
@@ -210,56 +236,11 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
             final IoConnector connector = new SocketConnector();
             final InetSocketAddress localServer = 
                 new InetSocketAddress("127.0.0.1", ShootConstants.HTTP_PORT);
-            final IoHandler handler = new IoHandlerAdapter() 
-                {
-                public void messageReceived(final IoSession session, 
-                    final Object message) throws Exception
-                    {
-                    // This is data received from the local HTTP server --
-                    // the raw data of an HTTP response.  It might be
-                    // larger than the maximum allowed size for TURN messages,
-                    // so we make sure to split it up.
-                    final ByteBuffer in = (ByteBuffer) message;
-                    
-                    // Send the data broken up into chunks if necessary.  This 
-                    // is because TURN messages cannot be larger than 0xffff.
-                    sendSplitBuffers(remoteAddress, in);
-                    }
-                
-                public void sessionClosed(final IoSession session) 
-                    throws Exception
-                    {
-                    LOG.debug("Received session closed!!");
-                    m_addressesToSessions.remove(remoteAddress);
-                    }
-                
-                /**
-                 * Splits the main read buffer into smaller buffers that will 
-                 * fit in TURN messages.
-                 * 
-                 * @param remoteHost The host the data came from.
-                 * @param buffer The main read buffer to split.
-                 * @param session The session for reading and writing data.
-                 * @param nextFilter The next class for processing the message.
-                 */
-                private void sendSplitBuffers(
-                    final InetSocketAddress remoteHost, final ByteBuffer buffer)
-                    {
-                    LOG.debug("Sending split buffers!!");
-                    // Break up the data into smaller chunks.
-                    final Collection<byte[]> buffers = 
-                        MinaUtils.splitToByteArrays(buffer, LENGTH_LIMIT);
-                    for (final byte[] data : buffers)
-                        {
-                        final SendIndication indication = 
-                            new SendIndication(remoteHost, data);
-                        m_ioSession.write(indication);
-                        }
-                    }
-                };
+            final IoHandler ioHandler = 
+                new TurnLocalIoHandler(this, m_ioSession, remoteAddress);
                 
             final ConnectFuture ioFuture = 
-                connector.connect(localServer, handler);
+                connector.connect(localServer, ioHandler);
             
             // We're just connecting locally, so it should be much quicker 
             // than this unless there's something wrong.
@@ -304,5 +285,25 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
             this.m_receivedAllocateResponse = false;
             this.m_listener.disconnected();
             }
+        
+        // Now close any of the local "proxied" sockets as well.
+        final Collection<IoSession> sessions = 
+            this.m_addressesToSessions.values();
+        for (final IoSession curSession : sessions)
+            {
+            curSession.close();
+            }
+        this.m_addressesToSessions.clear();
+        }
+
+    public void onLocalSessionClosed(final InetSocketAddress remoteAddress, 
+        final IoSession session)
+        {
+        // Remove the remote address.  Note the session's already been 
+        // closed -- that's why we received this event.  We also have likely
+        // already removed it depending on exactly where it arose from, but
+        // we remove it again just in case.
+        LOG.debug("Received local session closed...");
+        this.m_addressesToSessions.remove(remoteAddress);
         }
     }
