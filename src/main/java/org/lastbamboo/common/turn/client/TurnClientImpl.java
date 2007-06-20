@@ -68,6 +68,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
     private IoSession m_ioSession;
     private InetSocketAddress m_relayAddress;
     private InetSocketAddress m_mappedAddress;
+    private boolean m_receivedAllocateResponse;
     
     /**
      * This is the limit on the length of the data to encapsulate in a Send
@@ -173,6 +174,7 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
         // listener we're "connected".
         this.m_relayAddress = response.getRelayAddress();
         this.m_mappedAddress = response.getMappedAddress();
+        this.m_receivedAllocateResponse = true;
         this.m_listener.connected(this.m_turnServerAddress);
         }
     
@@ -292,6 +294,13 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
     public void sessionDestroyed(final IoSession session)
         {
         LOG.debug("Session destroyed...");
-        this.m_listener.disconnected();
+        if (this.m_receivedAllocateResponse)
+            {
+            // We're disconnected, so set the allocate response flag to false
+            // because the client's current connection, or lack thereof, has
+            // not received a response.
+            this.m_receivedAllocateResponse = false;
+            this.m_listener.disconnected();
+            }
         }
     }
