@@ -19,13 +19,11 @@ import org.apache.mina.common.IoServiceConfig;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.common.RuntimeIOException;
+import org.apache.mina.filter.codec.ProtocolCodecFactory;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.codec.ProtocolDecoder;
-import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
-import org.lastbamboo.common.stun.stack.decoder.StunMessageDecodingState;
-import org.lastbamboo.common.stun.stack.encoder.StunProtocolEncoder;
+import org.lastbamboo.common.stun.stack.decoder.StunProtocolCodecFactory;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
 import org.lastbamboo.common.stun.stack.message.attributes.turn.ConnectionStatus;
 import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
@@ -35,7 +33,6 @@ import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.stun.stack.message.turn.SuccessfulAllocateResponse;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
 import org.lastbamboo.common.util.ShootConstants;
-import org.lastbamboo.common.util.mina.StateMachineProtocolDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * If this ever loses the connection to the TURN server, it notifies the
  * listener that maintains TURN connections.
  */
-public class TurnClientImpl extends StunMessageVisitorAdapter 
+public class TcpTurnClient extends StunMessageVisitorAdapter 
     implements TurnClient, IoServiceListener, TurnLocalSessionListener
     {
     
@@ -71,16 +68,15 @@ public class TurnClientImpl extends StunMessageVisitorAdapter
     /**
      * Creates a new TURN client.
      */
-    public TurnClientImpl()
+    public TcpTurnClient()
         {
         m_connector = new SocketConnector();
         
         // This will encode Allocate Requests and Send Indications.
-        final ProtocolEncoder encoder = new StunProtocolEncoder();
-        final ProtocolDecoder decoder = 
-            new StateMachineProtocolDecoder(new StunMessageDecodingState());
+        final ProtocolCodecFactory codecFactory = 
+            new StunProtocolCodecFactory();
         final ProtocolCodecFilter stunFilter = 
-            new ProtocolCodecFilter(encoder, decoder);
+            new ProtocolCodecFilter(codecFactory);
         m_connector.getFilterChain().addLast("codec", stunFilter);
         m_connector.addListener(this);
         }

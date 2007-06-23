@@ -84,7 +84,7 @@ public class TurnClientTest extends TestCase
             };
         final InetSocketAddress localServer = 
             new InetSocketAddress("127.0.0.1", 3478);
-        final TurnClient client = new TurnClientImpl();
+        final TurnClient client = new TcpTurnClient();
         client.connect(listener, localServer);
         
         synchronized (this)
@@ -228,12 +228,14 @@ public class TurnClientTest extends TestCase
         final byte[] sendTransIdBytes = new byte[16];
         sendBuf.get(sendTransIdBytes);
         
-        final int firstAttributeType = sendBuf.getUnsignedShort();
+        final StunAttributeType firstAttributeType = 
+            StunAttributeType.toType(sendBuf.getUnsignedShort());
         final int firstAttributeLength = sendBuf.getUnsignedShort();
         final byte[] firstAttributeBody = new byte[firstAttributeLength];
         sendBuf.get(firstAttributeBody);
         
-        final int secondAttributeType = sendBuf.getUnsignedShort();
+        final StunAttributeType secondAttributeType = 
+            StunAttributeType.toType(sendBuf.getUnsignedShort());
         final int secondAttributeLength = sendBuf.getUnsignedShort();
         final byte[] secondAttributeBody = new byte[secondAttributeLength];
         sendBuf.get(secondAttributeBody);
