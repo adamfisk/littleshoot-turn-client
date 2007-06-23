@@ -7,7 +7,7 @@
         The TURN client.
     -->
     <bean id="turnClient"
-          class="org.lastbamboo.common.turn.client.TurnClientImpl">
+          class="org.lastbamboo.common.turn.client.TcpTurnClient">
         </bean>
         
     <!--
