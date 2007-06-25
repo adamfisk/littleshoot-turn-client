@@ -36,6 +36,7 @@
         <constructor-arg><ref bean="threadUtils"/></constructor-arg>
         <constructor-arg><ref local="turnServerConnectionEstablisher"/></constructor-arg>
         <constructor-arg><ref local="turnServerCandidateProvider"/></constructor-arg>
+        <constructor-arg><value>1</value></constructor-arg>
         </bean>
         
     </beans>
