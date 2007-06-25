@@ -135,6 +135,7 @@ public class TurnClientTest extends TestCase
                     }
                 catch (Exception e)
                     {
+                    e.printStackTrace();
                     TurnClientTest.fail("Server errror: "+e.getMessage());
                     }
                 }
