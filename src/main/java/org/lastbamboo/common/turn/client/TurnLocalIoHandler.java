@@ -126,6 +126,7 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
             MinaUtils.splitToByteArrays(buffer, LENGTH_LIMIT);
         for (final byte[] data : buffers)
             {
+            LOG.debug("Sending buffer with capacity: {}", data.length);
             final SendIndication indication = 
                 new SendIndication(remoteHost, data);
             m_ioSession.write(indication);

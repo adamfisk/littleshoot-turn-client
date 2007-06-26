@@ -198,6 +198,9 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
                 break;
             case ESTABLISHED:
                 LOG.debug("Connection established from: "+remoteAddress);
+                
+                // Create a local connection for the newly established session.
+                establishSessionForRemoteAddress(remoteAddress);
                 break;
             case LISTEN:
                 LOG.debug("Got server listening for incoming data from: "+
@@ -210,11 +213,26 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
         {
         LOG.debug("Visiting Data Indication message: {}", data);
         final InetSocketAddress remoteAddress = data.getRemoteAddress();
-        final IoSession session = getSessionForRemoteAddress(remoteAddress);
+        
+        // The session should be there 99% of the time, so we don't need
+        // to "establish" it, we just need to get it (since the handling of
+        // the ESTABLISHED Connection Status Indication message will have 
+        // already created it).  We do, however, include local idle session
+        // timeout handling that could have closed the session, so we make
+        // sure to establish it if it's not there.  
+        //
+        // We issue a warning because this could indicate suspect behavior from
+        // the remote host.
+        if (!m_addressesToSessions.containsKey(remoteAddress))
+            {
+            LOG.warn("Session for "+remoteAddress+"  timed out earlier??");
+            }
+        final IoSession session = 
+            establishSessionForRemoteAddress(remoteAddress);
         session.write(ByteBuffer.wrap(data.getData()));
         }
 
-    private IoSession getSessionForRemoteAddress(
+    private IoSession establishSessionForRemoteAddress(
         final InetSocketAddress remoteAddress)
         {
         // We don't synchronize here because we're processing data from
