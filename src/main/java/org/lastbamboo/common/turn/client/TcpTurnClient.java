@@ -157,6 +157,10 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
     public void visitSuccessfulAllocateResponse(
         final SuccessfulAllocateResponse response)
         {
+        // NOTE: This will get called many times for a single TURN session 
+        // between a client and a server because allocate requests are used
+        // for keep-alives as well as the initial allocation.
+        
         LOG.debug("Got successful allocate response: {}", response);
         // We need to set the relay address before notifying the 
         // listener we're "connected".
