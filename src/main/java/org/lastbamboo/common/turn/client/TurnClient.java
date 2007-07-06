@@ -1,5 +1,6 @@
 package org.lastbamboo.common.turn.client;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
@@ -48,5 +49,19 @@ public interface TurnClient
      * @return The address and port returned in the MAPPED ADDRESS attribute.
      */
     InetSocketAddress getMappedAddress();
+
+    /**
+     * Gets the address of the STUN server this TURN client is using.
+     * 
+     * @return The address of the STUN server.
+     */
+    InetAddress getStunServerAddress();
+
+    /**
+     * Gets the base address for the TURN client -- the local network address.
+     * 
+     * @return The client's base address.
+     */
+    InetSocketAddress getBaseAddress();
 
     }

@@ -1,5 +1,6 @@
 package org.lastbamboo.common.turn.client;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Collection;
@@ -56,7 +57,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
     private ConnectionMaintainerListener<InetSocketAddress> m_listener;
     private final SocketConnector m_connector;
     
-    private InetSocketAddress m_turnServerAddress;
+    private InetSocketAddress m_stunServerAddress;
     
     private final Map<InetSocketAddress, IoSession> m_addressesToSessions =
         new ConcurrentHashMap<InetSocketAddress, IoSession>();
@@ -83,14 +84,14 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
 
     public void connect(
         final ConnectionMaintainerListener<InetSocketAddress> listener, 
-        final InetSocketAddress serverAddress)
+        final InetSocketAddress stunServerAddress)
         {
         m_listener = listener;
-        m_turnServerAddress = serverAddress;
+        m_stunServerAddress = stunServerAddress;
         final IoConnectorConfig config = new SocketConnectorConfig();
         final IoHandler handler = new TurnClientIoHandler(this);
         final ConnectFuture connectFuture = 
-            m_connector.connect(m_turnServerAddress, handler, config);
+            m_connector.connect(m_stunServerAddress, handler, config);
         
         final IoFutureListener futureListener = new IoFutureListener()
             {
@@ -109,7 +110,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
                     {
                     // This seems to get thrown when we can't connect at all.
                     LOG.warn("Could not connect to TURN server at: {}", 
-                        serverAddress, e);
+                        stunServerAddress, e);
                     m_listener.connectionFailed();
                     return;
                     }
@@ -167,7 +168,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
         this.m_relayAddress = response.getRelayAddress();
         this.m_mappedAddress = response.getMappedAddress();
         this.m_receivedAllocateResponse = true;
-        this.m_listener.connected(this.m_turnServerAddress);
+        this.m_listener.connected(this.m_stunServerAddress);
         }
     
     public void visitConnectionStatusIndication(
@@ -323,5 +324,15 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
         // we remove it again just in case.
         LOG.debug("Received local session closed...");
         this.m_addressesToSessions.remove(remoteAddress);
+        }
+
+    public InetAddress getStunServerAddress()
+        {
+        return this.m_stunServerAddress.getAddress();
+        }
+
+    public InetSocketAddress getBaseAddress()
+        {
+        return (InetSocketAddress) this.m_ioSession.getLocalAddress();
         }
     }
