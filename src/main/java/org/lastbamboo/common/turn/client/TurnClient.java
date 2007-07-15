@@ -57,11 +57,4 @@ public interface TurnClient
      */
     InetAddress getStunServerAddress();
 
-    /**
-     * Gets the base address for the TURN client -- the local network address.
-     * 
-     * @return The client's base address.
-     */
-    InetSocketAddress getBaseAddress();
-
     }

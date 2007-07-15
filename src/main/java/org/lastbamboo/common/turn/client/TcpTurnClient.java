@@ -24,8 +24,10 @@ import org.apache.mina.filter.codec.ProtocolCodecFactory;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
+import org.lastbamboo.common.stun.client.StunClient;
 import org.lastbamboo.common.stun.stack.decoder.StunProtocolCodecFactory;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
+import org.lastbamboo.common.stun.stack.message.SuccessfulBindingResponse;
 import org.lastbamboo.common.stun.stack.message.attributes.turn.ConnectionStatus;
 import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
@@ -50,7 +52,8 @@ import org.slf4j.LoggerFactory;
  * listener that maintains TURN connections.
  */
 public class TcpTurnClient extends StunMessageVisitorAdapter 
-    implements TurnClient, IoServiceListener, TurnLocalSessionListener
+    implements TurnClient, IoServiceListener, TurnLocalSessionListener,
+    StunClient
     {
     
     private final Logger LOG = LoggerFactory.getLogger(getClass());
@@ -331,8 +334,25 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
         return this.m_stunServerAddress.getAddress();
         }
 
-    public InetSocketAddress getBaseAddress()
+    public InetSocketAddress getHostAddress()
         {
         return (InetSocketAddress) this.m_ioSession.getLocalAddress();
         }
+
+    public InetSocketAddress getServerReflexiveAddress()
+        {
+        return getMappedAddress();
+        }
+
+    public SuccessfulBindingResponse getBindingResponse()
+        {
+        // TODO Not sure what to do here yet!!
+        return null;
+        }
+
+    public IoSession getIoSession()
+        {
+        return this.m_ioSession;
+        }
+
     }
