@@ -26,8 +26,9 @@ import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.lastbamboo.common.stun.client.StunClient;
 import org.lastbamboo.common.stun.stack.decoder.StunProtocolCodecFactory;
+import org.lastbamboo.common.stun.stack.message.BindingRequest;
+import org.lastbamboo.common.stun.stack.message.StunMessage;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
-import org.lastbamboo.common.stun.stack.message.SuccessfulBindingResponse;
 import org.lastbamboo.common.stun.stack.message.attributes.turn.ConnectionStatus;
 import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * If this ever loses the connection to the TURN server, it notifies the
  * listener that maintains TURN connections.
  */
-public class TcpTurnClient extends StunMessageVisitorAdapter 
+public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
     implements TurnClient, IoServiceListener, TurnLocalSessionListener,
     StunClient
     {
@@ -158,7 +159,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
         return this.m_mappedAddress;
         }
 
-    public void visitSuccessfulAllocateResponse(
+    public Object visitSuccessfulAllocateResponse(
         final SuccessfulAllocateResponse response)
         {
         // NOTE: This will get called many times for a single TURN session 
@@ -172,9 +173,10 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
         this.m_mappedAddress = response.getMappedAddress();
         this.m_receivedAllocateResponse = true;
         this.m_listener.connected(this.m_stunServerAddress);
+        return null;
         }
     
-    public void visitConnectionStatusIndication(
+    public Object visitConnectionStatusIndication(
         final ConnectionStatusIndication indication)
         {
         LOG.debug("Visiting connection status message: {}", indication);
@@ -215,9 +217,10 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
                     remoteAddress);
                 break;
             }
+        return null;
         }
 
-    public void visitDataIndication(final DataIndication data)
+    public Object visitDataIndication(final DataIndication data)
         {
         LOG.debug("Visiting Data Indication message: {}", data);
         final InetSocketAddress remoteAddress = data.getRemoteAddress();
@@ -238,6 +241,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
         final IoSession session = 
             establishSessionForRemoteAddress(remoteAddress);
         session.write(ByteBuffer.wrap(data.getData()));
+        return null;
         }
 
     private IoSession establishSessionForRemoteAddress(
@@ -344,15 +348,13 @@ public class TcpTurnClient extends StunMessageVisitorAdapter
         return getMappedAddress();
         }
 
-    public SuccessfulBindingResponse getBindingResponse()
+    public StunMessage write(final BindingRequest request, 
+        final InetSocketAddress remoteAddress)
         {
-        // TODO Not sure what to do here yet!!
+        // TODO Same as above.  We should just send the request to the server,
+        // and we should combine the functionality of this class with the 
+        // functionality of TcpStunClient.
         return null;
-        }
-
-    public IoSession getIoSession()
-        {
-        return this.m_ioSession;
         }
 
     }
