@@ -30,11 +30,12 @@ import org.lastbamboo.common.stun.stack.message.BindingRequest;
 import org.lastbamboo.common.stun.stack.message.StunMessage;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
 import org.lastbamboo.common.stun.stack.message.attributes.turn.ConnectionStatus;
+import org.lastbamboo.common.stun.stack.message.turn.AllocateErrorResponse;
 import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
+import org.lastbamboo.common.stun.stack.message.turn.AllocateSuccessResponse;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
-import org.lastbamboo.common.stun.stack.message.turn.SuccessfulAllocateResponse;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
 import org.lastbamboo.common.util.ShootConstants;
 import org.slf4j.Logger;
@@ -159,8 +160,9 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         return this.m_mappedAddress;
         }
 
-    public Object visitSuccessfulAllocateResponse(
-        final SuccessfulAllocateResponse response)
+    @Override
+    public Object visitAllocateSuccessResponse(
+        final AllocateSuccessResponse response)
         {
         // NOTE: This will get called many times for a single TURN session 
         // between a client and a server because allocate requests are used
@@ -173,6 +175,17 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         this.m_mappedAddress = response.getMappedAddress();
         this.m_receivedAllocateResponse = true;
         this.m_listener.connected(this.m_stunServerAddress);
+        return null;
+        }
+    
+    @Override
+    public Object visitAllocateErrorResponse(
+        final AllocateErrorResponse response)
+        {
+        LOG.warn("Received an Allocate Response error from the server: "+
+            response.getAttributes());
+        this.m_listener.connectionFailed();
+        this.m_ioSession.close();
         return null;
         }
     
@@ -357,4 +370,10 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         return null;
         }
 
+    public StunMessage write(final BindingRequest request, 
+        final InetSocketAddress remoteAddress, final long rto)
+        {
+        // TODO Auto-generated method stub
+        return null;
+        }
     }

@@ -16,7 +16,7 @@ import org.lastbamboo.common.stun.stack.encoder.StunMessageEncoder;
 import org.lastbamboo.common.stun.stack.message.StunMessageType;
 import org.lastbamboo.common.stun.stack.message.attributes.StunAttributeType;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
-import org.lastbamboo.common.stun.stack.message.turn.SuccessfulAllocateResponse;
+import org.lastbamboo.common.stun.stack.message.turn.AllocateSuccessResponse;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
 import org.lastbamboo.common.util.ShootConstants;
 import org.lastbamboo.common.util.mina.MinaUtils;
@@ -184,7 +184,9 @@ public class TurnClientTest extends TestCase
         final ByteBuffer allocateRequestBuffer = ByteBuffer.allocate(20);
         allocateRequestBuffer.put(header);
         allocateRequestBuffer.flip();
-        final int messageType = allocateRequestBuffer.getUnsignedShort();
+        final int messageTypeInt = allocateRequestBuffer.getUnsignedShort();
+        final StunMessageType messageType = 
+            StunMessageType.toType(messageTypeInt);
         assertEquals(StunMessageType.ALLOCATE_REQUEST, messageType);
         final int messageLength = allocateRequestBuffer.getUnsignedShort();
         assertEquals(0, messageLength);
@@ -195,8 +197,8 @@ public class TurnClientTest extends TestCase
         final OutputStream os = client.getOutputStream();
         final InetSocketAddress randomRelayAddress = 
             new InetSocketAddress(42314);
-        final SuccessfulAllocateResponse sar = 
-            new SuccessfulAllocateResponse(new UUID(transactionId), 
+        final AllocateSuccessResponse sar = 
+            new AllocateSuccessResponse(new UUID(transactionId), 
                 randomRelayAddress, 
                 (InetSocketAddress)client.getRemoteSocketAddress());
         final StunMessageEncoder encoder = new StunMessageEncoder();
@@ -221,7 +223,8 @@ public class TurnClientTest extends TestCase
         is.read(sendIndicationBytes);
         LOG.debug("Read send indication bytes...");
         final ByteBuffer sendBuf = ByteBuffer.wrap(sendIndicationBytes);
-        final int sendType = sendBuf.getUnsignedShort();
+        final int sendTypeInt = sendBuf.getUnsignedShort();
+        final StunMessageType sendType = StunMessageType.toType(sendTypeInt);
         assertEquals(StunMessageType.SEND_INDICATION, sendType);
         final int sendLength = sendBuf.getUnsignedShort();
         assertEquals(16 + this.m_httpResponseLine.length(), sendLength);
