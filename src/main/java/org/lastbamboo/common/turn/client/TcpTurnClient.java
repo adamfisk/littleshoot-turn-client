@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.CloseFuture;
 import org.apache.mina.common.ConnectFuture;
+import org.apache.mina.common.ExecutorThreadModel;
 import org.apache.mina.common.IoConnector;
 import org.apache.mina.common.IoConnectorConfig;
 import org.apache.mina.common.IoFuture;
@@ -20,12 +21,13 @@ import org.apache.mina.common.IoServiceConfig;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.common.RuntimeIOException;
+import org.apache.mina.common.ThreadModel;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
 import org.lastbamboo.common.stun.client.StunClient;
-import org.lastbamboo.common.stun.stack.decoder.StunProtocolCodecFactory;
+import org.lastbamboo.common.stun.stack.StunProtocolCodecFactory;
 import org.lastbamboo.common.stun.stack.message.BindingRequest;
 import org.lastbamboo.common.stun.stack.message.StunMessage;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
@@ -94,6 +96,10 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         m_listener = listener;
         m_stunServerAddress = stunServerAddress;
         final IoConnectorConfig config = new SocketConnectorConfig();
+        final ThreadModel threadModel = 
+            ExecutorThreadModel.getInstance("TCP-TURN-Client");
+        config.setThreadModel(threadModel);
+        
         final IoHandler handler = new TurnClientIoHandler(this);
         final ConnectFuture connectFuture = 
             m_connector.connect(m_stunServerAddress, handler, config);
@@ -273,6 +279,10 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
             {
             LOG.debug("Opening new local socket...");
             final IoConnector connector = new SocketConnector();
+            final ThreadModel threadModel = 
+                ExecutorThreadModel.getInstance("TCP-TURN-Client-Local-Socket");
+            connector.getDefaultConfig().setThreadModel(threadModel);
+            
             final InetSocketAddress localServer = 
                 new InetSocketAddress("127.0.0.1", ShootConstants.HTTP_PORT);
             final IoHandler ioHandler = 

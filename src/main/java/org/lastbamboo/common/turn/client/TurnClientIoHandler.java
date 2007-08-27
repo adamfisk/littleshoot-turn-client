@@ -63,4 +63,9 @@ public class TurnClientIoHandler extends IoHandlerAdapter
         final AllocateRequest request = new AllocateRequest();
         session.write(request);
         }
+    
+    public void exceptionCaught(final IoSession session, final Throwable cause)
+        {
+        LOG.warn("Caught exception", cause);
+        }
     }
