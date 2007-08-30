@@ -7,7 +7,7 @@
     <packaging>jar</packaging>
     <version>1.0</version>
     <name>TURN Client</name>
-    <description>Last Bamboo TURN Client</description>
+    <description>LittleShoot TURN Client</description>
 
     <parent>
         <groupId>org.lastbamboo</groupId>
