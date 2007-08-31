@@ -62,7 +62,6 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
     
     private final Logger LOG = LoggerFactory.getLogger(getClass());
     private ConnectionMaintainerListener<InetSocketAddress> m_listener;
-    private final SocketConnector m_connector;
     
     private InetSocketAddress m_stunServerAddress;
     
@@ -72,27 +71,21 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
     private InetSocketAddress m_relayAddress;
     private InetSocketAddress m_mappedAddress;
     private boolean m_receivedAllocateResponse;
-    
-    /**
-     * Creates a new TURN client.
-     */
-    public TcpTurnClient()
+
+    public void connect(
+        final ConnectionMaintainerListener<InetSocketAddress> listener, 
+        final InetSocketAddress stunServerAddress)
         {
-        m_connector = new SocketConnector();
+        final SocketConnector connector = new SocketConnector();
         
         // This will encode Allocate Requests and Send Indications.
         final ProtocolCodecFactory codecFactory = 
             new StunProtocolCodecFactory();
         final ProtocolCodecFilter stunFilter = 
             new ProtocolCodecFilter(codecFactory);
-        m_connector.getFilterChain().addLast("codec", stunFilter);
-        m_connector.addListener(this);
-        }
-
-    public void connect(
-        final ConnectionMaintainerListener<InetSocketAddress> listener, 
-        final InetSocketAddress stunServerAddress)
-        {
+        connector.getFilterChain().addLast("codec", stunFilter);
+        connector.addListener(this);
+        
         m_listener = listener;
         m_stunServerAddress = stunServerAddress;
         final IoConnectorConfig config = new SocketConnectorConfig();
@@ -102,7 +95,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         
         final IoHandler handler = new TurnClientIoHandler(this);
         final ConnectFuture connectFuture = 
-            m_connector.connect(m_stunServerAddress, handler, config);
+            connector.connect(m_stunServerAddress, handler, config);
         
         final IoFutureListener futureListener = new IoFutureListener()
             {
