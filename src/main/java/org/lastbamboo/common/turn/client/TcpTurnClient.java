@@ -12,7 +12,6 @@ import org.apache.mina.common.CloseFuture;
 import org.apache.mina.common.ConnectFuture;
 import org.apache.mina.common.ExecutorThreadModel;
 import org.apache.mina.common.IoConnector;
-import org.apache.mina.common.IoConnectorConfig;
 import org.apache.mina.common.IoFuture;
 import org.apache.mina.common.IoFutureListener;
 import org.apache.mina.common.IoHandler;
@@ -88,7 +87,8 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         
         m_listener = listener;
         m_stunServerAddress = stunServerAddress;
-        final IoConnectorConfig config = new SocketConnectorConfig();
+        final SocketConnectorConfig config = new SocketConnectorConfig();
+        config.getSessionConfig().setReuseAddress(true);
         final ThreadModel threadModel = 
             ExecutorThreadModel.getInstance("TCP-TURN-Client");
         config.setThreadModel(threadModel);
