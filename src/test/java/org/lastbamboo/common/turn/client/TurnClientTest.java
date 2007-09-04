@@ -84,7 +84,7 @@ public class TurnClientTest extends TestCase
             };
         final InetSocketAddress localServer = 
             new InetSocketAddress("127.0.0.1", 3478);
-        final TurnClient client = new TcpTurnClient();
+        final TurnClient client = new TcpTurnClient(ShootConstants.HTTP_PORT);
         client.connect(listener, localServer);
         
         synchronized (this)

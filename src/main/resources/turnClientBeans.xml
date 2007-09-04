@@ -8,6 +8,7 @@
     -->
     <bean id="turnClient"
           class="org.lastbamboo.common.turn.client.TcpTurnClient">
+        <constructor-arg><value>8107</value></constructor-arg>
         </bean>
         
     <!--

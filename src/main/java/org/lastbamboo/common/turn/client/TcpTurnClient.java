@@ -38,7 +38,6 @@ import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
-import org.lastbamboo.common.util.ShootConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,10 +69,24 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
     private InetSocketAddress m_relayAddress;
     private InetSocketAddress m_mappedAddress;
     private boolean m_receivedAllocateResponse;
+    private final int m_localServerPort;
 
+    public TcpTurnClient(final int localServerPort)
+        {
+        m_localServerPort = localServerPort;
+        }
+ 
     public void connect(
         final ConnectionMaintainerListener<InetSocketAddress> listener, 
         final InetSocketAddress stunServerAddress)
+        {
+        connect(listener, stunServerAddress, null);
+        }
+    
+    public void connect(
+        final ConnectionMaintainerListener<InetSocketAddress> listener, 
+        final InetSocketAddress stunServerAddress,
+        final InetSocketAddress localAddress)
         {
         final SocketConnector connector = new SocketConnector();
         
@@ -89,13 +102,24 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         m_stunServerAddress = stunServerAddress;
         final SocketConnectorConfig config = new SocketConnectorConfig();
         config.getSessionConfig().setReuseAddress(true);
+        
         final ThreadModel threadModel = 
             ExecutorThreadModel.getInstance("TCP-TURN-Client");
         config.setThreadModel(threadModel);
         
         final IoHandler handler = new TurnClientIoHandler(this);
-        final ConnectFuture connectFuture = 
-            connector.connect(m_stunServerAddress, handler, config);
+        final ConnectFuture connectFuture; 
+        if (localAddress == null)
+            {
+            connectFuture = 
+                connector.connect(m_stunServerAddress, handler, config);
+            }
+        else
+            {
+            connectFuture = 
+                connector.connect(m_stunServerAddress, localAddress, handler, 
+                    config);
+            }
         
         final IoFutureListener futureListener = new IoFutureListener()
             {
@@ -277,7 +301,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
             connector.getDefaultConfig().setThreadModel(threadModel);
             
             final InetSocketAddress localServer = 
-                new InetSocketAddress("127.0.0.1", ShootConstants.HTTP_PORT);
+                new InetSocketAddress("127.0.0.1", m_localServerPort);
             final IoHandler ioHandler = 
                 new TurnLocalIoHandler(this, m_ioSession, remoteAddress);
                 
@@ -290,7 +314,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
             final IoSession session = ioFuture.getSession();
             if (!session.isConnected())
                 {
-                LOG.error("Could not connect to HTTP server!!");
+                LOG.error("Could not connect to local server!!");
                 }
             this.m_addressesToSessions.put(remoteAddress, session);
             return session;
@@ -370,6 +394,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         // TODO Same as above.  We should just send the request to the server,
         // and we should combine the functionality of this class with the 
         // functionality of TcpStunClient.
+        LOG.error("Unsupported!!!!!!!");
         return null;
         }
 
@@ -377,6 +402,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         final InetSocketAddress remoteAddress, final long rto)
         {
         // TODO Auto-generated method stub
+        LOG.error("Unsupported!!!!!!!");
         return null;
         }
     }
