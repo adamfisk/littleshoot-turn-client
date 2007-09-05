@@ -71,6 +71,12 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
     private boolean m_receivedAllocateResponse;
     private final int m_localServerPort;
 
+    /**
+     * Creates a new TCP TURN client.
+     * 
+     * @param localServerPort The port of the local server to relay traffic 
+     * to.
+     */
     public TcpTurnClient(final int localServerPort)
         {
         m_localServerPort = localServerPort;

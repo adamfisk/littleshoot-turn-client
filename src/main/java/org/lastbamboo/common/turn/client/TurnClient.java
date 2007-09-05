@@ -14,12 +14,24 @@ public interface TurnClient
     /**
      * Tells the client to connect to its TURN server.
      * 
-     * @param serverAddress The address of the server to connect to. 
+     * @param stunServerAddress The address of the STUN server to connect to. 
      * @param listener The listener for connection status to maintain 
      * connections. 
      */
     void connect(ConnectionMaintainerListener<InetSocketAddress> listener, 
-        InetSocketAddress serverAddress);
+        InetSocketAddress stunServerAddress);
+    
+    /**
+     * Tells the client to connect to its TURN server.
+     * 
+     * @param stunServerAddress The address of the STUN server to connect to. 
+     * @param listener The listener for connection status to maintain 
+     * connections. 
+     * @param localAddress The local address to bind to.  Binds to an ephemeral
+     * port if the local address is <code>null</code>.
+     */
+    void connect(ConnectionMaintainerListener<InetSocketAddress> listener, 
+        InetSocketAddress stunServerAddress, InetSocketAddress localAddress);
 
     /**
      * Accesses the allocated address for this TURN client on the TURN server.
