@@ -5,33 +5,36 @@
 
     <!--
         The TURN client.
-    -->
+    
     <bean id="turnClient"
           class="org.lastbamboo.common.turn.client.TcpTurnClient">
         <constructor-arg><value>8107</value></constructor-arg>
         </bean>
+        -->
         
     <!--
         The object that establishes TURN server connections.  This is the
         interface used by the connection maintainer to maintain multiple TURN
         server connections.
-    -->
+    
     <bean id="turnServerConnectionEstablisher"
           class="org.lastbamboo.common.turn.client.TurnConnectionEstablisher">
         <constructor-arg><ref local="turnClient"/></constructor-arg>
         </bean>
+        -->
         
         
     <!--
         The object that provides candidate TURN servers to which to connect.
-    -->
+    
     <bean id="turnServerCandidateProvider"
           class="org.lastbamboo.common.turn.client.TurnServerCandidateProvider">
         </bean>
+        -->
 
     <!--
         The object that establishes maintains TURN server connections.
-    -->
+    
     <bean id="turnConnectionMaintainer"
           class="org.lastbamboo.common.util.ConnectionMaintainerImpl">
         <constructor-arg><ref bean="threadUtils"/></constructor-arg>
@@ -39,5 +42,6 @@
         <constructor-arg><ref local="turnServerCandidateProvider"/></constructor-arg>
         <constructor-arg><value>1</value></constructor-arg>
         </bean>
+        -->
         
     </beans>
