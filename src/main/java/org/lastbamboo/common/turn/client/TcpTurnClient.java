@@ -3,15 +3,15 @@ package org.lastbamboo.common.turn.client;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.CloseFuture;
 import org.apache.mina.common.ConnectFuture;
 import org.apache.mina.common.ExecutorThreadModel;
-import org.apache.mina.common.IoConnector;
+import org.apache.mina.common.IoFilter;
+import org.apache.mina.common.IoFilterAdapter;
 import org.apache.mina.common.IoFuture;
 import org.apache.mina.common.IoFutureListener;
 import org.apache.mina.common.IoHandler;
@@ -20,13 +20,14 @@ import org.apache.mina.common.IoServiceConfig;
 import org.apache.mina.common.IoServiceListener;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.common.RuntimeIOException;
+import org.apache.mina.common.SimpleByteBufferAllocator;
 import org.apache.mina.common.ThreadModel;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.apache.mina.transport.socket.nio.SocketConnector;
 import org.apache.mina.transport.socket.nio.SocketConnectorConfig;
-import org.lastbamboo.common.stun.client.StunClient;
-import org.lastbamboo.common.stun.stack.StunProtocolCodecFactory;
+import org.lastbamboo.common.stun.stack.StunMessageDecoder;
 import org.lastbamboo.common.stun.stack.message.BindingRequest;
 import org.lastbamboo.common.stun.stack.message.StunMessage;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorAdapter;
@@ -53,33 +54,39 @@ import org.slf4j.LoggerFactory;
  * If this ever loses the connection to the TURN server, it notifies the
  * listener that maintains TURN connections.
  */
-public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
-    implements TurnClient, IoServiceListener, TurnLocalSessionListener,
-    StunClient
+public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
+    implements TurnClient, IoServiceListener
     {
     
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
-    private ConnectionMaintainerListener<InetSocketAddress> m_listener;
+    private final Logger m_log = LoggerFactory.getLogger(getClass());
+    private ConnectionMaintainerListener<InetSocketAddress> 
+        m_connectionListener;
     
     private InetSocketAddress m_stunServerAddress;
     
-    private final Map<InetSocketAddress, IoSession> m_addressesToSessions =
-        new ConcurrentHashMap<InetSocketAddress, IoSession>();
     private IoSession m_ioSession;
     private InetSocketAddress m_relayAddress;
     private InetSocketAddress m_mappedAddress;
     private boolean m_receivedAllocateResponse;
-    private final int m_localServerPort;
+    private final TurnClientListener m_turnClientListener;
+    private final ProtocolCodecFactory m_dataCodecFactory;
+    private int m_totalReadDataBytes;
+    private int m_totalReadRawDataBytes;
+    
+    private final Set<InetSocketAddress> m_remoteAddresses = 
+        new HashSet<InetSocketAddress>();
 
     /**
      * Creates a new TCP TURN client.
-     * 
-     * @param localServerPort The port of the local server to relay traffic 
-     * to.
      */
-    public TcpTurnClient(final int localServerPort)
+    public TcpTurnClient(final TurnClientListener clientListener, 
+        final ProtocolCodecFactory dataCodecFactory)
         {
-        m_localServerPort = localServerPort;
+        m_turnClientListener = clientListener;
+        m_dataCodecFactory = dataCodecFactory;
+        // Configure the MINA buffers for optimal performance.
+        ByteBuffer.setUseDirectBuffers(false);
+        ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
         }
  
     public void connect(
@@ -96,34 +103,75 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         {
         final SocketConnector connector = new SocketConnector();
         
-        // This will encode Allocate Requests and Send Indications.
-        final ProtocolCodecFactory codecFactory = 
-            new StunProtocolCodecFactory();
-        final ProtocolCodecFilter stunFilter = 
-            new ProtocolCodecFilter(codecFactory);
-        connector.getFilterChain().addLast("codec", stunFilter);
+        final StunMessageDecoder decoder = new StunMessageDecoder();
+        // TODO: Does this work with arbitrary length data?
+        final IoFilter turnFilter = new IoFilterAdapter()
+            {
+            @Override
+            public void filterWrite(final NextFilter nextFilter, 
+                final IoSession session, final WriteRequest writeRequest) 
+                throws Exception 
+                {
+                m_log.debug("Filtering write: "+writeRequest.getMessage());
+                nextFilter.filterWrite(session, writeRequest);
+                }
+            
+            @Override
+            public void messageReceived(
+                final NextFilter nextFilter, final IoSession session, 
+                final Object message) throws Exception
+                {
+                final ByteBuffer in = (ByteBuffer) message;
+                final ProtocolDecoderOutput out = new ProtocolDecoderOutput()
+                    {
+                    public void flush()
+                        {
+                        }
+
+                    public void write(final Object msg)
+                        {
+                        final StunMessage stunMessage = (StunMessage) msg;
+                        stunMessage.accept(TcpTurnClient.this);
+                        }
+                    };
+                
+                decoder.decode(session, in, out);
+                }
+            };
+
+        // If TURN is used with ICE, this will be a demultiplexing filter 
+        // between STUN and the media stream data. 
+        final ProtocolCodecFilter dataFilter =
+            new ProtocolCodecFilter(m_dataCodecFactory);
+
+        connector.getFilterChain().addLast("stunFilter", turnFilter);
+        
+        // This is really only used for the encoding.
+        connector.getFilterChain().addLast("dataFilter", dataFilter);
+        
         connector.addListener(this);
         
-        m_listener = listener;
+        m_connectionListener = listener;
         m_stunServerAddress = stunServerAddress;
         final SocketConnectorConfig config = new SocketConnectorConfig();
         config.getSessionConfig().setReuseAddress(true);
         
         final ThreadModel threadModel = 
             ExecutorThreadModel.getInstance("TCP-TURN-Client");
-        config.setThreadModel(threadModel);
+        //config.setThreadModel(threadModel);
+        config.setThreadModel(ThreadModel.MANUAL);
         
-        final IoHandler handler = new TurnClientIoHandler(this);
+        final IoHandler ioHandler = new TurnClientIoHandler(this);
         final ConnectFuture connectFuture; 
         if (localAddress == null)
             {
             connectFuture = 
-                connector.connect(m_stunServerAddress, handler, config);
+                connector.connect(m_stunServerAddress, ioHandler, config);
             }
         else
             {
             connectFuture = 
-                connector.connect(m_stunServerAddress, localAddress, handler, 
+                connector.connect(m_stunServerAddress, localAddress, ioHandler, 
                     config);
             }
         
@@ -133,7 +181,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
                 {
                 if (!ioFuture.isReady())
                     {
-                    LOG.warn("Future not ready?");
+                    m_log.warn("Future not ready?");
                     return;
                     }
                 try
@@ -143,22 +191,22 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
                 catch (final RuntimeIOException e)
                     {
                     // This seems to get thrown when we can't connect at all.
-                    LOG.warn("Could not connect to TURN server at: {}", 
+                    m_log.warn("Could not connect to TURN server at: {}", 
                         stunServerAddress, e);
-                    m_listener.connectionFailed();
+                    m_connectionListener.connectionFailed();
                     return;
                     }
                 if (m_ioSession.isConnected())
                     {
                     final AllocateRequest msg = new AllocateRequest();
     
-                    LOG.debug ("Sending allocate request to write handler...");
+                    m_log.debug ("Sending allocate request to write handler...");
                     m_ioSession.write(msg);
                     }
                 else
                     {
-                    LOG.debug("Connect failed for: {}", m_ioSession);
-                    m_listener.connectionFailed();
+                    m_log.debug("Connect failed for: {}", m_ioSession);
+                    m_connectionListener.connectionFailed();
                     }
                 }
             };
@@ -190,195 +238,120 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         }
 
     @Override
-    public Object visitAllocateSuccessResponse(
+    public StunMessage visitAllocateSuccessResponse(
         final AllocateSuccessResponse response)
         {
         // NOTE: This will get called many times for a single TURN session 
         // between a client and a server because allocate requests are used
         // for keep-alives as well as the initial allocation.
         
-        LOG.debug("Got successful allocate response: {}", response);
+        m_log.debug("Got successful allocate response: {}", response);
         // We need to set the relay address before notifying the 
         // listener we're "connected".
         this.m_relayAddress = response.getRelayAddress();
         this.m_mappedAddress = response.getMappedAddress();
         this.m_receivedAllocateResponse = true;
-        this.m_listener.connected(this.m_stunServerAddress);
+        this.m_connectionListener.connected(this.m_stunServerAddress);
         return null;
         }
     
     @Override
-    public Object visitAllocateErrorResponse(
+    public StunMessage visitAllocateErrorResponse(
         final AllocateErrorResponse response)
         {
-        LOG.warn("Received an Allocate Response error from the server: "+
+        m_log.warn("Received an Allocate Response error from the server: "+
             response.getAttributes());
-        this.m_listener.connectionFailed();
+        this.m_connectionListener.connectionFailed();
         this.m_ioSession.close();
         return null;
         }
     
-    public Object visitConnectionStatusIndication(
+    @Override
+    public StunMessage visitConnectionStatusIndication(
         final ConnectionStatusIndication indication)
         {
-        LOG.debug("Visiting connection status message: {}", indication);
+        m_log.debug("Visiting connection status message: {}", indication);
         final ConnectionStatus status = indication.getConnectionStatus();
         final InetSocketAddress remoteAddress = indication.getRemoteAddress();
         switch (status)
             {
             case CLOSED:
-                LOG.debug("Got connection closed from: "+remoteAddress);
-                if (!this.m_addressesToSessions.containsKey(remoteAddress))
-                    {
-                    // This would be odd -- could indicate someone fiddling
-                    // with our servers?
-                    LOG.warn("We don't know about the remote address: "+
-                        remoteAddress);
-                    }
-                else
-                    {
-                    LOG.debug("Closing connection to local HTTP server...");
-                    final IoSession session = 
-                        this.m_addressesToSessions.remove(remoteAddress);
-                    
-                    // Stop the local session.  In particular, it the session
-                    // is in the middle of an HTTP transfer, this will stop
-                    // the HTTP server from sending more data to a host that's
-                    // no longer there on the other end.
-                    session.close();
-                    }
+                m_log.debug("Got connection closed from: "+remoteAddress);
+                this.m_turnClientListener.onRemoteAddressClosed(remoteAddress);
                 break;
             case ESTABLISHED:
-                LOG.debug("Connection established from: "+remoteAddress);
+                m_log.debug("Connection established from: "+remoteAddress);
                 
                 // Create a local connection for the newly established session.
-                establishSessionForRemoteAddress(remoteAddress);
+                this.m_turnClientListener.onRemoteAddressOpened(remoteAddress, 
+                    this.m_ioSession);
                 break;
             case LISTEN:
-                LOG.debug("Got server listening for incoming data from: "+
+                m_log.debug("Got server listening for incoming data from: "+
                     remoteAddress);
                 break;
             }
         return null;
         }
 
-    public Object visitDataIndication(final DataIndication data)
+    @Override
+    public StunMessage visitDataIndication(final DataIndication data)
         {
-        LOG.debug("Visiting Data Indication message: {}", data);
+        m_log.debug("Visiting Data Indication message: {}", data);
+        m_totalReadDataBytes += data.getTotalLength();
+        m_totalReadRawDataBytes += data.getData().length;
+        m_log.debug("Data Indication bytes total: {}", m_totalReadDataBytes);
+        m_log.debug("Data Indication data bytes total: {}", m_totalReadRawDataBytes);
         final InetSocketAddress remoteAddress = data.getRemoteAddress();
-        
-        // The session should be there 99% of the time, so we don't need
-        // to "establish" it, we just need to get it (since the handling of
-        // the ESTABLISHED Connection Status Indication message will have 
-        // already created it).  We do, however, include local idle session
-        // timeout handling that could have closed the session, so we make
-        // sure to establish it if it's not there.  
-        //
-        // We issue a warning because this could indicate suspect behavior from
-        // the remote host.
-        if (!m_addressesToSessions.containsKey(remoteAddress))
+        m_remoteAddresses.add(remoteAddress);
+        m_log.debug("Number of remote addresses we've seen: {}", 
+            m_remoteAddresses.size());
+        try
             {
-            LOG.warn("Session for "+remoteAddress+"  timed out earlier??");
+            m_turnClientListener.onData(remoteAddress, this.m_ioSession, 
+                data.getData());
             }
-        final IoSession session = 
-            establishSessionForRemoteAddress(remoteAddress);
-        session.write(ByteBuffer.wrap(data.getData()));
+        catch (final Exception e)
+            {
+            m_log.error("Could not process data: {}", data, e);
+            }
         return null;
         }
-
-    private IoSession establishSessionForRemoteAddress(
-        final InetSocketAddress remoteAddress)
-        {
-        // We don't synchronize here because we're processing data from
-        // a single TCP connection.
-        if (m_addressesToSessions.containsKey(remoteAddress))
-            {
-            // This is the connection from the local proxy server to the 
-            // local client.  So we're essentially writing to our local
-            // we server.
-            return m_addressesToSessions.get(remoteAddress);
-            }
-        else
-            {
-            LOG.debug("Opening new local socket...");
-            final IoConnector connector = new SocketConnector();
-            final ThreadModel threadModel = 
-                ExecutorThreadModel.getInstance("TCP-TURN-Client-Local-Socket");
-            connector.getDefaultConfig().setThreadModel(threadModel);
-            
-            final InetSocketAddress localServer = 
-                new InetSocketAddress("127.0.0.1", m_localServerPort);
-            final IoHandler ioHandler = 
-                new TurnLocalIoHandler(this, m_ioSession, remoteAddress);
-                
-            final ConnectFuture ioFuture = 
-                connector.connect(localServer, ioHandler);
-            
-            // We're just connecting locally, so it should be much quicker 
-            // than this unless there's something wrong.
-            ioFuture.join(6000);
-            final IoSession session = ioFuture.getSession();
-            if (!session.isConnected())
-                {
-                LOG.error("Could not connect to local server!!");
-                }
-            this.m_addressesToSessions.put(remoteAddress, session);
-            return session;
-            }
-        }
-
+    
     public void serviceActivated(final IoService service, 
         final SocketAddress serviceAddress, final IoHandler handler, 
         final IoServiceConfig config)
         {
-        LOG.debug("Service activated...");
+        m_log.debug("Service activated...");
         }
 
     public void serviceDeactivated(final IoService service, 
         final SocketAddress serviceAddress, final IoHandler handler, 
         final IoServiceConfig config)
         {
-        LOG.debug("Service deactivated...");
+        m_log.debug("Service deactivated...");
         }
 
     public void sessionCreated(final IoSession session)
         {
-        LOG.debug("Session created...");
+        m_log.debug("Session created...");
         }
 
     public void sessionDestroyed(final IoSession session)
         {
-        LOG.debug("Session destroyed...");
+        m_log.debug("Session destroyed...");
         if (this.m_receivedAllocateResponse)
             {
             // We're disconnected, so set the allocate response flag to false
             // because the client's current connection, or lack thereof, has
             // not received a response.
             this.m_receivedAllocateResponse = false;
-            this.m_listener.disconnected();
+            this.m_connectionListener.disconnected();
             }
         
-        // Now close any of the local "proxied" sockets as well.
-        final Collection<IoSession> sessions = 
-            this.m_addressesToSessions.values();
-        for (final IoSession curSession : sessions)
-            {
-            curSession.close();
-            }
-        this.m_addressesToSessions.clear();
+        this.m_turnClientListener.close();
         }
-
-    public void onLocalSessionClosed(final InetSocketAddress remoteAddress, 
-        final IoSession session)
-        {
-        // Remove the remote address.  Note the session's already been 
-        // closed -- that's why we received this event.  We also have likely
-        // already removed it depending on exactly where it arose from, but
-        // we remove it again just in case.
-        LOG.debug("Received local session closed...");
-        this.m_addressesToSessions.remove(remoteAddress);
-        }
-
+    
     public InetAddress getStunServerAddress()
         {
         return this.m_stunServerAddress.getAddress();
@@ -400,7 +373,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         // TODO Same as above.  We should just send the request to the server,
         // and we should combine the functionality of this class with the 
         // functionality of TcpStunClient.
-        LOG.error("Unsupported!!!!!!!");
+        m_log.error("Unsupported!!!!!!!");
         return null;
         }
 
@@ -408,7 +381,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<Object>
         final InetSocketAddress remoteAddress, final long rto)
         {
         // TODO Auto-generated method stub
-        LOG.error("Unsupported!!!!!!!");
+        m_log.error("Unsupported!!!!!!!");
         return null;
         }
     }

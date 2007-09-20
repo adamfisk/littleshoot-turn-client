@@ -3,12 +3,13 @@ package org.lastbamboo.common.turn.client;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
+import org.lastbamboo.common.stun.client.StunClient;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
 
 /**
  * Interface for the local TURN client. 
  */
-public interface TurnClient
+public interface TurnClient extends StunClient
     {
 
     /**

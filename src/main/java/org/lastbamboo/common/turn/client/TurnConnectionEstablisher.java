@@ -11,14 +11,14 @@ import org.lastbamboo.common.util.ConnectionMaintainerListener;
 /**
  * The connection establisher used to establish connections with TURN servers.
  */
-public final class TurnServerConnectionEstablisher
-        implements ConnectionEstablisher<InetSocketAddress, InetSocketAddress>
+public final class TurnConnectionEstablisher
+    implements ConnectionEstablisher<InetSocketAddress, InetSocketAddress>
     {
     /**
      * The log for this class.
      */
     private static final Log LOG =
-        LogFactory.getLog (TurnServerConnectionEstablisher.class);
+        LogFactory.getLog (TurnConnectionEstablisher.class);
     private final TurnClient m_client;
 
     /**
@@ -27,7 +27,7 @@ public final class TurnServerConnectionEstablisher
      * 
      * @param client The TURN client class.
      */
-    public TurnServerConnectionEstablisher(final TurnClient client)
+    public TurnConnectionEstablisher(final TurnClient client)
         {
         m_client = client;
         }

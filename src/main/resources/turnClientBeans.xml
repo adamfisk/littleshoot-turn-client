@@ -17,7 +17,7 @@
         server connections.
     -->
     <bean id="turnServerConnectionEstablisher"
-          class="org.lastbamboo.common.turn.client.TurnServerConnectionEstablisher">
+          class="org.lastbamboo.common.turn.client.TurnConnectionEstablisher">
         <constructor-arg><ref local="turnClient"/></constructor-arg>
         </bean>
         

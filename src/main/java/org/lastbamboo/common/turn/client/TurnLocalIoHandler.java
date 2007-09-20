@@ -10,6 +10,8 @@ import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.util.SessionUtil;
 import org.lastbamboo.common.stun.stack.message.turn.SendIndication;
+import org.lastbamboo.common.tcp.frame.TcpFrame;
+import org.lastbamboo.common.tcp.frame.TcpFrameEncoder;
 import org.lastbamboo.common.util.mina.MinaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +29,7 @@ import org.slf4j.LoggerFactory;
 public class TurnLocalIoHandler extends IoHandlerAdapter
     {
 
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    private final Logger m_log = LoggerFactory.getLogger(getClass());
     
     /**
      * This is the limit on the length of the data to encapsulate in a Send
@@ -39,28 +41,22 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
     private final InetSocketAddress m_remoteAddress;
     private final IoSession m_ioSession;
 
-    private final TurnLocalSessionListener m_localSessionListener;
-
     /**
      * Creates a new TURN local IO handler.
      * 
-     * @param localSessionListener The class for listening to local session 
-     * events.
      * @param ioSession The connection to the TURN server itself.
      * @param remoteAddress The remote host we're exchanging data with.
      */
     public TurnLocalIoHandler(
-        final TurnLocalSessionListener localSessionListener, 
         final IoSession ioSession, final InetSocketAddress remoteAddress)
         {
-        m_localSessionListener = localSessionListener;
         m_ioSession = ioSession;
         m_remoteAddress = remoteAddress;
         }
 
-    public void messageReceived(final IoSession session, 
-        final Object message) throws Exception
+    public void messageReceived(final IoSession session, final Object message) 
         {
+        m_log.debug("Received local data message: {}", message);
         // This is data received from the local HTTP server --
         // the raw data of an HTTP response.  It might be
         // larger than the maximum allowed size for TURN messages,
@@ -69,19 +65,22 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
         
         // Send the data broken up into chunks if necessary.  This 
         // is because TURN messages cannot be larger than 0xffff.
-        sendSplitBuffers(m_remoteAddress, in);
+        sendSplitBuffers(in);
+        }
+    
+    public void messageSent(final IoSession session, final Object message) 
+        {
+        m_log.debug("Sent local TURN message number: {}", 
+            session.getWrittenMessages());
         }
     
     public void sessionClosed(final IoSession session) 
-        throws Exception
         {
         // Remember this is only a local "proxied" session.  
-        LOG.debug("Received **local** session closed!!");
-        m_localSessionListener.onLocalSessionClosed(m_remoteAddress, session);
+        m_log.debug("Received **local** session closed!!");
         }
     
     public void sessionCreated(final IoSession session) 
-        throws Exception
         {
         SessionUtil.initialize(session);
         
@@ -102,9 +101,9 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
         }
 
     public void exceptionCaught(final IoSession session, 
-        final Throwable cause) throws Exception
+        final Throwable cause) 
         {
-        LOG.error("Error processing data for **local** session: "+
+        m_log.error("Error processing data for **local** session: "+
             session, cause);
         }
     
@@ -117,18 +116,24 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
      * @param session The session for reading and writing data.
      * @param nextFilter The next class for processing the message.
      */
-    private void sendSplitBuffers(
-        final InetSocketAddress remoteHost, final ByteBuffer buffer)
+    private void sendSplitBuffers(final ByteBuffer buffer)
         {
-        LOG.debug("Sending split buffers!!");
         // Break up the data into smaller chunks.
         final Collection<byte[]> buffers = 
             MinaUtils.splitToByteArrays(buffer, LENGTH_LIMIT);
+        m_log.debug("Split single buffer into {}", buffers.size());
         for (final byte[] data : buffers)
             {
-            LOG.debug("Sending buffer with capacity: {}", data.length);
+            m_log.debug("Sending buffer with capacity: {}", data.length);
+            final TcpFrame frame = new TcpFrame(data);
+            final TcpFrameEncoder encoder = new TcpFrameEncoder();
+            final ByteBuffer encodedFrame = encoder.encode(frame);
+            
+            // TODO: Avoid this extra copy!!
+            final byte[] bytes = MinaUtils.toByteArray(encodedFrame);
+            m_log.debug("Sending TCP framed data of length: {}", bytes.length);
             final SendIndication indication = 
-                new SendIndication(remoteHost, data);
+                new SendIndication(m_remoteAddress, bytes);
             m_ioSession.write(indication);
             }
         }

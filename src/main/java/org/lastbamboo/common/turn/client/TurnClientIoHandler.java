@@ -5,8 +5,8 @@ import org.apache.mina.common.IoHandler;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.util.SessionUtil;
+import org.lastbamboo.common.stun.stack.message.StunMessage;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitor;
-import org.lastbamboo.common.stun.stack.message.VisitableStunMessage;
 import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,31 +19,30 @@ public class TurnClientIoHandler extends IoHandlerAdapter
 
     private final Logger LOG = LoggerFactory.getLogger(getClass());
     
-    private final StunMessageVisitor m_visitor;
+    private final StunMessageVisitor<StunMessage> m_visitor;
 
     /**
      * Creates a new {@link IoHandler} for the TURN proxy/client.
      * 
      * @param visitor The class for visiting read messages.
      */
-    public TurnClientIoHandler(final StunMessageVisitor visitor)
+    public TurnClientIoHandler(final StunMessageVisitor<StunMessage> visitor)
         {
         m_visitor = visitor;
         }
 
-    public void messageReceived(final IoSession session, 
-        final Object message) throws Exception
+    public void messageReceived(final IoSession session, final Object message)
         {
-        final VisitableStunMessage vsm = (VisitableStunMessage) message;
+        final StunMessage vsm = (StunMessage) message;
         vsm.accept(this.m_visitor);
         }
     
-    public void sessionClosed(final IoSession session ) throws Exception
+    public void sessionClosed(final IoSession session)
         {
         // This is taken care of through an IoServiceListener.
         }
     
-    public void sessionCreated(final IoSession session) throws Exception
+    public void sessionCreated(final IoSession session)
         {
         SessionUtil.initialize(session);
         
@@ -57,7 +56,6 @@ public class TurnClientIoHandler extends IoHandlerAdapter
         }
 
     public void sessionIdle(final IoSession session, final IdleStatus status) 
-        throws Exception
         {
         LOG.debug("Session idle...issue new Allocate Request...");
         final AllocateRequest request = new AllocateRequest();
