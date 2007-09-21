@@ -70,4 +70,6 @@ public interface TurnClient extends StunClient
      */
     InetAddress getStunServerAddress();
 
+    boolean isConnected();
+
     }

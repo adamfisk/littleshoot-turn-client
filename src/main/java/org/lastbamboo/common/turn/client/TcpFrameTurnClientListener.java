@@ -1,9 +1,7 @@
 package org.lastbamboo.common.turn.client;
 
 import java.net.InetSocketAddress;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.mina.common.ByteBuffer;
@@ -38,8 +36,6 @@ public class TcpFrameTurnClientListener implements TurnClientListener
     
     private final Logger m_log = LoggerFactory.getLogger(getClass());
     
-    //private final ProtocolDecoder m_decoder;
-
     private final Map<InetSocketAddress, ProtocolDecoder> m_addressesToDecoders =
         new ConcurrentHashMap<InetSocketAddress, ProtocolDecoder>();
     
@@ -47,6 +43,8 @@ public class TcpFrameTurnClientListener implements TurnClientListener
 
     private final StunMessageVisitorFactory<StunMessage> 
         m_stunMessageVisitorFactory;
+    
+    private volatile int m_totalUnframedBytes = 0;
     
     /**
      * Creates a new class that decodes {@link TcpFrame}s from incoming data.
@@ -62,23 +60,13 @@ public class TcpFrameTurnClientListener implements TurnClientListener
         m_delegateListener = delegateListener;
         }
 
-    private final Set<InetSocketAddress> m_remoteAddresses =
-        new HashSet<InetSocketAddress>();
-    private final Set<InetSocketAddress> m_forwardedRemoteAddresses =
-        new HashSet<InetSocketAddress>();
-
     private int m_totalDataBytesSentToDecode;
     
     public void onData(final InetSocketAddress remoteAddress, 
         final IoSession session, final byte[] data) 
         {
         m_log.debug("Received data");
-        m_remoteAddresses.add(remoteAddress);
-        m_log.debug("Now seen "+m_remoteAddresses.size()+" remote addresses...");
-        final ProtocolDecoderOutput out =
-            new TcpFrameProtocolDecoderOutput(remoteAddress, session);
-        /*
-        new ProtocolDecoderOutput()
+        final ProtocolDecoderOutput out = new ProtocolDecoderOutput()
             {
             public void flush()
                 {
@@ -94,10 +82,10 @@ public class TcpFrameTurnClientListener implements TurnClientListener
                 if (TcpFrame.class.isAssignableFrom(message.getClass()))
                     {
                     final TcpFrame frame = (TcpFrame) message;
-                    m_delegateListener.onData(remoteAddress, session, 
-                        frame.getData());
-                    m_forwardedRemoteAddresses.add(remoteAddress);
-                    m_log.debug("Now forwarded "+m_forwardedRemoteAddresses.size()+" remote addresses...");
+                    final byte[] unframed = frame.getData();
+                    m_totalUnframedBytes += unframed.length;
+                    m_log.debug("Unframed bytes: {}", m_totalUnframedBytes);
+                    m_delegateListener.onData(remoteAddress, session, unframed);
                     }
                 else if (StunMessage.class.isAssignableFrom(message.getClass()))
                     {
@@ -120,7 +108,6 @@ public class TcpFrameTurnClientListener implements TurnClientListener
                     }
                 }
             };
-            */
         final ByteBuffer dataBuf = ByteBuffer.wrap(data);
         final ProtocolDecoder decoder = getDecoder(remoteAddress);
         try
@@ -173,14 +160,12 @@ public class TcpFrameTurnClientListener implements TurnClientListener
             }
         }
 
-
     public IoSession onRemoteAddressOpened(
         final InetSocketAddress remoteAddress, final IoSession ioSession)
         {
         return 
             m_delegateListener.onRemoteAddressOpened(remoteAddress, ioSession);
         }
-     
 
     public void onRemoteAddressClosed(final InetSocketAddress remoteAddress)
         {
@@ -191,58 +176,4 @@ public class TcpFrameTurnClientListener implements TurnClientListener
         {
         this.m_delegateListener.close();
         }
-    
-    private final class TcpFrameProtocolDecoderOutput implements ProtocolDecoderOutput
-        {
-        private final Logger m_outputLog = LoggerFactory.getLogger(getClass());
-        private final InetSocketAddress m_remoteAddress;
-        private final IoSession m_session;
-        
-        private TcpFrameProtocolDecoderOutput(
-            final InetSocketAddress remoteAddress, final IoSession session)
-            {
-            m_remoteAddress = remoteAddress;
-            m_session = session;
-            }
-        public void flush()
-            {
-            }
-        public void write(final Object message) 
-            {
-            // Thoroughly annoying hack to reuse the demuxing IoHandlers.
-            // The problem is we need to keep track of the remote address,
-            // and we lose it if we simply send the message along to the
-            // next handler.  
-            // The next handler could or could not be this class, as it
-            // could be a STUN message.
-            if (TcpFrame.class.isAssignableFrom(message.getClass()))
-                {
-                final TcpFrame frame = (TcpFrame) message;
-                m_delegateListener.onData(m_remoteAddress, m_session, 
-                    frame.getData());
-                m_forwardedRemoteAddresses.add(m_remoteAddress);
-                m_outputLog.debug("Now forwarded "+m_forwardedRemoteAddresses.size()+" remote addresses...");
-                }
-            else if (StunMessage.class.isAssignableFrom(message.getClass()))
-                {
-                final IoHandler stunIoHandler = 
-                    new StunIoHandler<StunMessage>(
-                        m_stunMessageVisitorFactory);
-                try
-                    {
-                    stunIoHandler.messageReceived(m_session, message);
-                    }
-                catch (final Exception e)
-                    {
-                    m_outputLog.error(
-                        "Could not process STUN message. "+message, e);
-                    }
-                }
-            else
-                {
-                m_outputLog.error("Could not recognize data: {}", message);
-                }
-            }
-    
-        };
     }

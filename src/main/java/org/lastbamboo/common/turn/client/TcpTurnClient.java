@@ -3,8 +3,6 @@ package org.lastbamboo.common.turn.client;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.CloseFuture;
@@ -39,6 +37,7 @@ import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
+import org.lastbamboo.common.util.NotYetImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,10 +71,8 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
     private final ProtocolCodecFactory m_dataCodecFactory;
     private int m_totalReadDataBytes;
     private int m_totalReadRawDataBytes;
+    private volatile boolean m_connected;
     
-    private final Set<InetSocketAddress> m_remoteAddresses = 
-        new HashSet<InetSocketAddress>();
-
     /**
      * Creates a new TCP TURN client.
      */
@@ -252,6 +249,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         this.m_mappedAddress = response.getMappedAddress();
         this.m_receivedAllocateResponse = true;
         this.m_connectionListener.connected(this.m_stunServerAddress);
+        this.m_connected = true;
         return null;
         }
     
@@ -300,12 +298,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         m_log.debug("Visiting Data Indication message: {}", data);
         m_totalReadDataBytes += data.getTotalLength();
         m_totalReadRawDataBytes += data.getData().length;
-        m_log.debug("Data Indication bytes total: {}", m_totalReadDataBytes);
-        m_log.debug("Data Indication data bytes total: {}", m_totalReadRawDataBytes);
         final InetSocketAddress remoteAddress = data.getRemoteAddress();
-        m_remoteAddresses.add(remoteAddress);
-        m_log.debug("Number of remote addresses we've seen: {}", 
-            m_remoteAddresses.size());
         try
             {
             m_turnClientListener.onData(remoteAddress, this.m_ioSession, 
@@ -374,7 +367,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         // and we should combine the functionality of this class with the 
         // functionality of TcpStunClient.
         m_log.error("Unsupported!!!!!!!");
-        return null;
+        throw new NotYetImplementedException("Not implemented.");
         }
 
     public StunMessage write(final BindingRequest request, 
@@ -382,6 +375,11 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         {
         // TODO Auto-generated method stub
         m_log.error("Unsupported!!!!!!!");
-        return null;
+        throw new NotYetImplementedException("Not implemented.");
+        }
+
+    public boolean isConnected()
+        {
+        return this.m_connected;
         }
     }

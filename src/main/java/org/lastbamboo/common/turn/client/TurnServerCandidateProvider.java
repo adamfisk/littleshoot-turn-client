@@ -12,7 +12,8 @@ import org.lastbamboo.common.util.CandidateProvider;
 /**
  * The candidate provider that provides candidate TURN servers.
  */
-public final class TurnServerCandidateProvider implements CandidateProvider
+public final class TurnServerCandidateProvider 
+    implements CandidateProvider<InetSocketAddress>
     {
     /**
      * The log for this class.
@@ -23,7 +24,7 @@ public final class TurnServerCandidateProvider implements CandidateProvider
     /**
      * {@inheritDoc}
      */
-    public Collection getCandidates()
+    public Collection<InetSocketAddress> getCandidates()
         {
         LOG.debug("Accessing TURN servers...");
         final InetSocketAddress turnServer =
