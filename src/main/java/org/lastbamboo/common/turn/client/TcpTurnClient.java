@@ -3,6 +3,7 @@ package org.lastbamboo.common.turn.client;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.CloseFuture;
@@ -36,8 +37,14 @@ import org.lastbamboo.common.stun.stack.message.turn.AllocateSuccessResponse;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
+import org.lastbamboo.common.util.CandidateProvider;
+import org.lastbamboo.common.util.ConnectionMaintainer;
+import org.lastbamboo.common.util.ConnectionMaintainerImpl;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
 import org.lastbamboo.common.util.NotYetImplementedException;
+import org.lastbamboo.common.util.RuntimeIoException;
+import org.lastbamboo.common.util.ThreadUtils;
+import org.lastbamboo.common.util.ThreadUtilsImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,19 +78,56 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
     private final ProtocolCodecFactory m_dataCodecFactory;
     private int m_totalReadDataBytes;
     private int m_totalReadRawDataBytes;
-    private volatile boolean m_connected;
+    private final AtomicBoolean m_connected = new AtomicBoolean(false);
+    private final SocketConnector m_connector = new SocketConnector();
+    private final CandidateProvider<InetSocketAddress> m_candidateProvider;
     
     /**
      * Creates a new TCP TURN client.
      */
     public TcpTurnClient(final TurnClientListener clientListener, 
-        final ProtocolCodecFactory dataCodecFactory)
+        final ProtocolCodecFactory dataCodecFactory, 
+        final CandidateProvider<InetSocketAddress> candidateProvider)
         {
         m_turnClientListener = clientListener;
         m_dataCodecFactory = dataCodecFactory;
+        m_candidateProvider = candidateProvider;
         // Configure the MINA buffers for optimal performance.
         ByteBuffer.setUseDirectBuffers(false);
         ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
+        }
+    
+
+    public void connect()
+        {
+        // Take care of all the connection maintaining code here.
+        final TurnConnectionEstablisher connectionEstablisher = 
+            new TurnConnectionEstablisher(this);
+        
+        final ThreadUtils threadUtils = new ThreadUtilsImpl();
+        final ConnectionMaintainer<InetSocketAddress> connectionMaintainer =
+            new ConnectionMaintainerImpl<InetSocketAddress, InetSocketAddress>(
+                threadUtils, connectionEstablisher, m_candidateProvider, 1);
+        
+        connectionMaintainer.start();
+        
+        synchronized (this.m_connected)
+            {
+            try
+                {
+                this.m_connected.wait(20 * 1000);
+                }
+            catch (final InterruptedException e)
+                {
+                m_log.error("Interrupted while waiting", e);
+                }
+            }
+        
+        if (!isConnected())
+            {
+            m_log.error("Could not connect or did not get allocate response");
+            throw new RuntimeIoException("Could not connect!!");
+            }
         }
  
     public void connect(
@@ -98,8 +142,6 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         final InetSocketAddress stunServerAddress,
         final InetSocketAddress localAddress)
         {
-        final SocketConnector connector = new SocketConnector();
-        
         final StunMessageDecoder decoder = new StunMessageDecoder();
         // TODO: Does this work with arbitrary length data?
         final IoFilter turnFilter = new IoFilterAdapter()
@@ -141,12 +183,12 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         final ProtocolCodecFilter dataFilter =
             new ProtocolCodecFilter(m_dataCodecFactory);
 
-        connector.getFilterChain().addLast("stunFilter", turnFilter);
+        m_connector.getFilterChain().addLast("stunFilter", turnFilter);
         
         // This is really only used for the encoding.
-        connector.getFilterChain().addLast("dataFilter", dataFilter);
+        m_connector.getFilterChain().addLast("dataFilter", dataFilter);
         
-        connector.addListener(this);
+        m_connector.addListener(this);
         
         m_connectionListener = listener;
         m_stunServerAddress = stunServerAddress;
@@ -163,12 +205,12 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         if (localAddress == null)
             {
             connectFuture = 
-                connector.connect(m_stunServerAddress, ioHandler, config);
+                m_connector.connect(m_stunServerAddress, ioHandler, config);
             }
         else
             {
             connectFuture = 
-                connector.connect(m_stunServerAddress, localAddress, ioHandler, 
+                m_connector.connect(m_stunServerAddress, localAddress, ioHandler, 
                     config);
             }
         
@@ -249,7 +291,11 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         this.m_mappedAddress = response.getMappedAddress();
         this.m_receivedAllocateResponse = true;
         this.m_connectionListener.connected(this.m_stunServerAddress);
-        this.m_connected = true;
+        this.m_connected.set(true);
+        synchronized (this.m_connected)
+            {
+            this.m_connected.notifyAll();
+            }
         return null;
         }
     
@@ -380,6 +426,15 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
 
     public boolean isConnected()
         {
-        return this.m_connected;
+        return this.m_connected.get();
+        }
+
+    public void addIoServiceListener(final IoServiceListener serviceListener)
+        {
+        if (serviceListener == null)
+            {
+            throw new NullPointerException("Null listener");
+            }
+        this.m_connector.addListener(serviceListener);
         }
     }

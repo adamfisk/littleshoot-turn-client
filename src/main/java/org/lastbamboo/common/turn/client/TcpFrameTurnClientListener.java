@@ -41,8 +41,7 @@ public class TcpFrameTurnClientListener implements TurnClientListener
     
     private final TurnClientListener m_delegateListener;
 
-    private final StunMessageVisitorFactory<StunMessage> 
-        m_stunMessageVisitorFactory;
+    private final StunMessageVisitorFactory m_stunMessageVisitorFactory;
     
     private volatile int m_totalUnframedBytes = 0;
     
@@ -53,7 +52,7 @@ public class TcpFrameTurnClientListener implements TurnClientListener
      * @param delegateListener The listener to forward all events to.
      */
     public TcpFrameTurnClientListener(
-        final StunMessageVisitorFactory<StunMessage> stunMessageVisitorFactory,
+        final StunMessageVisitorFactory stunMessageVisitorFactory,
         final TurnClientListener delegateListener) 
         {
         m_stunMessageVisitorFactory = stunMessageVisitorFactory;
