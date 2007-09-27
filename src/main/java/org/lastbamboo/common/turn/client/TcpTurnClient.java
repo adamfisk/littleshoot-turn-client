@@ -96,10 +96,13 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         ByteBuffer.setUseDirectBuffers(false);
         ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
         }
-    
 
     public void connect()
         {
+        if (this.m_connected.get())
+            {
+            throw new IllegalArgumentException("Already connected...");
+            }
         // Take care of all the connection maintaining code here.
         final TurnConnectionEstablisher connectionEstablisher = 
             new TurnConnectionEstablisher(this);
