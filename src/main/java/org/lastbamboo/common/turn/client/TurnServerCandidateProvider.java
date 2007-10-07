@@ -27,8 +27,12 @@ public final class TurnServerCandidateProvider
     public Collection<InetSocketAddress> getCandidates()
         {
         LOG.debug("Accessing TURN servers...");
+        // TODO: We need to access the list of TURN servers available from
+        // S3.  Same for SIP.
         final InetSocketAddress turnServer =
-            new InetSocketAddress("lastbamboo.org", StunConstants.STUN_PORT);
+            new InetSocketAddress(
+                "ec2-67-202-11-253.z-1.compute-1.amazonaws.com", 
+                StunConstants.STUN_PORT);
         final Collection<InetSocketAddress> servers = 
             new LinkedList<InetSocketAddress>();
         

@@ -4,35 +4,12 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.lastbamboo.common.stun.client.StunClient;
-import org.lastbamboo.common.util.ConnectionMaintainerListener;
 
 /**
  * Interface for the local TURN client. 
  */
 public interface TurnClient extends StunClient
     {
-
-    /**
-     * Tells the client to connect to its TURN server.
-     * 
-     * @param stunServerAddress The address of the STUN server to connect to. 
-     * @param listener The listener for connection status to maintain 
-     * connections. 
-     */
-    void connect(ConnectionMaintainerListener<InetSocketAddress> listener, 
-        InetSocketAddress stunServerAddress);
-    
-    /**
-     * Tells the client to connect to its TURN server.
-     * 
-     * @param stunServerAddress The address of the STUN server to connect to. 
-     * @param listener The listener for connection status to maintain 
-     * connections. 
-     * @param localAddress The local address to bind to.  Binds to an ephemeral
-     * port if the local address is <code>null</code>.
-     */
-    void connect(ConnectionMaintainerListener<InetSocketAddress> listener, 
-        InetSocketAddress stunServerAddress, InetSocketAddress localAddress);
 
     /**
      * Accesses the allocated address for this TURN client on the TURN server.
@@ -70,6 +47,14 @@ public interface TurnClient extends StunClient
      */
     InetAddress getStunServerAddress();
 
+    /**
+     * Returns whether or not the TURN client is connected.  A TURN client
+     * is only considered "connected" if it has successfully allocated a 
+     * port on the TURN server for relaying data.
+     * 
+     * @return <code>true</code> if the TURN client is connected to its server,
+     * otherwise <code>false</code>.
+     */
     boolean isConnected();
 
     }

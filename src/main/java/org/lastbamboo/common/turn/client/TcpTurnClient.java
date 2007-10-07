@@ -38,6 +38,7 @@ import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.util.CandidateProvider;
+import org.lastbamboo.common.util.ConnectionEstablisher;
 import org.lastbamboo.common.util.ConnectionMaintainer;
 import org.lastbamboo.common.util.ConnectionMaintainerImpl;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
@@ -61,7 +62,8 @@ import org.slf4j.LoggerFactory;
  * listener that maintains TURN connections.
  */
 public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
-    implements TurnClient, IoServiceListener
+    implements TurnClient, IoServiceListener, 
+    ConnectionEstablisher<InetSocketAddress, InetSocketAddress>
     {
     
     private final Logger m_log = LoggerFactory.getLogger(getClass());
@@ -104,13 +106,10 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
             throw new IllegalArgumentException("Already connected...");
             }
         // Take care of all the connection maintaining code here.
-        final TurnConnectionEstablisher connectionEstablisher = 
-            new TurnConnectionEstablisher(this);
-        
         final ThreadUtils threadUtils = new ThreadUtilsImpl();
         final ConnectionMaintainer<InetSocketAddress> connectionMaintainer =
             new ConnectionMaintainerImpl<InetSocketAddress, InetSocketAddress>(
-                threadUtils, connectionEstablisher, m_candidateProvider, 1);
+                threadUtils, this, m_candidateProvider, 1);
         
         connectionMaintainer.start();
         
@@ -132,21 +131,19 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
             throw new RuntimeIoException("Could not connect!!");
             }
         }
- 
-    public void connect(
-        final ConnectionMaintainerListener<InetSocketAddress> listener, 
-        final InetSocketAddress stunServerAddress)
+    
+    public void establish(final InetSocketAddress stunServerAddress,
+        final ConnectionMaintainerListener<InetSocketAddress> listener)
         {
         connect(listener, stunServerAddress, null);
         }
     
-    public void connect(
+    private void connect(
         final ConnectionMaintainerListener<InetSocketAddress> listener, 
         final InetSocketAddress stunServerAddress,
         final InetSocketAddress localAddress)
         {
         final StunMessageDecoder decoder = new StunMessageDecoder();
-        // TODO: Does this work with arbitrary length data?
         final IoFilter turnFilter = new IoFilterAdapter()
             {
             @Override
