@@ -39,7 +39,6 @@ import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.util.CandidateProvider;
-import org.lastbamboo.common.util.ConnectionMaintainerListener;
 import org.lastbamboo.common.util.NotYetImplementedException;
 import org.lastbamboo.common.util.RuntimeIoException;
 import org.slf4j.Logger;
@@ -111,11 +110,9 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         */
         final Collection<InetSocketAddress> candidates = 
             this.m_candidateProvider.getCandidates();
-        
-        for (final InetSocketAddress socketAddress : candidates)
-            {
-            connect(socketAddress, null);
-            }
+
+        final InetSocketAddress serverAddress = candidates.iterator().next();
+        connect(serverAddress, null);
         synchronized (this.m_connected)
             {
             try
@@ -135,14 +132,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
             }
         }
     
-    public void establish(final InetSocketAddress stunServerAddress,
-        final ConnectionMaintainerListener<InetSocketAddress> listener)
-        {
-        connect(stunServerAddress, null);
-        }
-    
     private void connect(
-        //final ConnectionMaintainerListener<InetSocketAddress> listener, 
         final InetSocketAddress stunServerAddress,
         final InetSocketAddress localAddress)
         {
