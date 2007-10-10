@@ -31,7 +31,7 @@ public final class TurnServerCandidateProvider
         // S3.  Same for SIP.
         final InetSocketAddress turnServer =
             new InetSocketAddress(
-                "ec2-67-202-11-253.z-1.compute-1.amazonaws.com", 
+                "ec2-67-202-6-199.z-1.compute-1.amazonaws.com", 
                 StunConstants.STUN_PORT);
         final Collection<InetSocketAddress> servers = 
             new LinkedList<InetSocketAddress>();
