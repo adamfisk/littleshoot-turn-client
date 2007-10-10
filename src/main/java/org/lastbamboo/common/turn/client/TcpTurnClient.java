@@ -3,6 +3,7 @@ package org.lastbamboo.common.turn.client;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.mina.common.ByteBuffer;
@@ -38,14 +39,9 @@ import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.util.CandidateProvider;
-import org.lastbamboo.common.util.ConnectionEstablisher;
-import org.lastbamboo.common.util.ConnectionMaintainer;
-import org.lastbamboo.common.util.ConnectionMaintainerImpl;
 import org.lastbamboo.common.util.ConnectionMaintainerListener;
 import org.lastbamboo.common.util.NotYetImplementedException;
 import org.lastbamboo.common.util.RuntimeIoException;
-import org.lastbamboo.common.util.ThreadUtils;
-import org.lastbamboo.common.util.ThreadUtilsImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,13 +58,12 @@ import org.slf4j.LoggerFactory;
  * listener that maintains TURN connections.
  */
 public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
-    implements TurnClient, IoServiceListener, 
-    ConnectionEstablisher<InetSocketAddress, InetSocketAddress>
+    implements TurnClient, IoServiceListener
     {
     
     private final Logger m_log = LoggerFactory.getLogger(getClass());
-    private ConnectionMaintainerListener<InetSocketAddress> 
-        m_connectionListener;
+    //private ConnectionMaintainerListener<InetSocketAddress> 
+      //  m_connectionListener;
     
     private InetSocketAddress m_stunServerAddress;
     
@@ -106,13 +101,21 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
             throw new IllegalArgumentException("Already connected...");
             }
         // Take care of all the connection maintaining code here.
+        /*
         final ThreadUtils threadUtils = new ThreadUtilsImpl();
         final ConnectionMaintainer<InetSocketAddress> connectionMaintainer =
             new ConnectionMaintainerImpl<InetSocketAddress, InetSocketAddress>(
                 threadUtils, this, m_candidateProvider, 1);
         
         connectionMaintainer.start();
+        */
+        final Collection<InetSocketAddress> candidates = 
+            this.m_candidateProvider.getCandidates();
         
+        for (final InetSocketAddress socketAddress : candidates)
+            {
+            connect(socketAddress, null);
+            }
         synchronized (this.m_connected)
             {
             try
@@ -135,11 +138,11 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
     public void establish(final InetSocketAddress stunServerAddress,
         final ConnectionMaintainerListener<InetSocketAddress> listener)
         {
-        connect(listener, stunServerAddress, null);
+        connect(stunServerAddress, null);
         }
     
     private void connect(
-        final ConnectionMaintainerListener<InetSocketAddress> listener, 
+        //final ConnectionMaintainerListener<InetSocketAddress> listener, 
         final InetSocketAddress stunServerAddress,
         final InetSocketAddress localAddress)
         {
@@ -190,7 +193,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         
         m_connector.addListener(this);
         
-        m_connectionListener = listener;
+        //m_connectionListener = listener;
         m_stunServerAddress = stunServerAddress;
         final SocketConnectorConfig config = new SocketConnectorConfig();
         config.getSessionConfig().setReuseAddress(true);
@@ -232,7 +235,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
                     // This seems to get thrown when we can't connect at all.
                     m_log.warn("Could not connect to TURN server at: {}", 
                         stunServerAddress, e);
-                    m_connectionListener.connectionFailed();
+                    //m_connectionListener.connectionFailed();
                     return;
                     }
                 if (m_ioSession.isConnected())
@@ -245,7 +248,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
                 else
                     {
                     m_log.debug("Connect failed for: {}", m_ioSession);
-                    m_connectionListener.connectionFailed();
+                    //m_connectionListener.connectionFailed();
                     }
                 }
             };
@@ -290,7 +293,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         this.m_relayAddress = response.getRelayAddress();
         this.m_mappedAddress = response.getMappedAddress();
         this.m_receivedAllocateResponse = true;
-        this.m_connectionListener.connected(this.m_stunServerAddress);
+        //this.m_connectionListener.connected(this.m_stunServerAddress);
         this.m_connected.set(true);
         synchronized (this.m_connected)
             {
@@ -305,7 +308,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         {
         m_log.warn("Received an Allocate Response error from the server: "+
             response.getAttributes());
-        this.m_connectionListener.connectionFailed();
+        //this.m_connectionListener.connectionFailed();
         this.m_ioSession.close();
         return null;
         }
@@ -385,7 +388,8 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
             // because the client's current connection, or lack thereof, has
             // not received a response.
             this.m_receivedAllocateResponse = false;
-            this.m_connectionListener.disconnected();
+            this.m_connected.set(false);
+            //this.m_connectionListener.disconnected();
             }
         
         this.m_turnClientListener.close();
