@@ -56,7 +56,7 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
 
     public void messageReceived(final IoSession session, final Object message) 
         {
-        m_log.debug("Received local data message: {}", message);
+        m_log.debug("Received local data message.");
         // This is data received from the local HTTP server --
         // the raw data of an HTTP response.  It might be
         // larger than the maximum allowed size for TURN messages,
