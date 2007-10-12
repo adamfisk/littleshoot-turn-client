@@ -150,7 +150,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
                 final IoSession session, final WriteRequest writeRequest) 
                 throws Exception 
                 {
-                m_log.debug("Filtering write: "+writeRequest.getMessage());
+                //m_log.debug("Filtering write: "+writeRequest.getMessage());
                 nextFilter.filterWrite(session, writeRequest);
                 }
             
