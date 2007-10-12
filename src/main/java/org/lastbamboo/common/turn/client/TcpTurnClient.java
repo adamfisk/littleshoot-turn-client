@@ -61,8 +61,6 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
     {
     
     private final Logger m_log = LoggerFactory.getLogger(getClass());
-    //private ConnectionMaintainerListener<InetSocketAddress> 
-      //  m_connectionListener;
     
     private InetSocketAddress m_stunServerAddress;
     
@@ -79,35 +77,43 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
     private final CandidateProvider<InetSocketAddress> m_candidateProvider;
 
     /**
+     * Creates a new TURN client with the default provider for server addresses.
+     * 
+     * @param clientListener The listener for TURN client events.
+     * @param codecFactory The codec factory.
+     */
+    public TcpTurnClient(final TurnClientListener clientListener,
+        final ProtocolCodecFactory codecFactory)
+        {
+        this(clientListener, new TurnServerCandidateProvider(), codecFactory);
+        }
+    
+    /**
      * Creates a new TCP TURN client.
+     * 
+     * @param clientListener The listener for TURN client events.
+     * @param candidateProvider The class that provides TURN candidate 
+     * servers.
+     * @param codecFactory The codec factory.
      */
     public TcpTurnClient(final TurnClientListener clientListener, 
         final CandidateProvider<InetSocketAddress> candidateProvider,
-        final ProtocolCodecFactory dataCodecFactory)
+        final ProtocolCodecFactory codecFactory)
         {
         m_turnClientListener = clientListener;
         m_candidateProvider = candidateProvider;
-        m_dataCodecFactory = dataCodecFactory;
+        m_dataCodecFactory = codecFactory;
         // Configure the MINA buffers for optimal performance.
         ByteBuffer.setUseDirectBuffers(false);
         ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
         }
-
+    
     public void connect()
         {
         if (this.m_connected.get())
             {
             throw new IllegalArgumentException("Already connected...");
             }
-        // Take care of all the connection maintaining code here.
-        /*
-        final ThreadUtils threadUtils = new ThreadUtilsImpl();
-        final ConnectionMaintainer<InetSocketAddress> connectionMaintainer =
-            new ConnectionMaintainerImpl<InetSocketAddress, InetSocketAddress>(
-                threadUtils, this, m_candidateProvider, 1);
-        
-        connectionMaintainer.start();
-        */
         final Collection<InetSocketAddress> candidates = 
             this.m_candidateProvider.getCandidates();
 
