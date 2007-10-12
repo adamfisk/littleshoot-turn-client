@@ -255,8 +255,11 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
     
     public void close()
         {
-        final CloseFuture closeFuture = this.m_ioSession.close();
-        closeFuture.join();
+        if (this.m_ioSession != null)
+            {
+            final CloseFuture closeFuture = this.m_ioSession.close();
+            closeFuture.join();
+            }
         }
     
     public void sendConnectRequest(final InetSocketAddress remoteAddress)
