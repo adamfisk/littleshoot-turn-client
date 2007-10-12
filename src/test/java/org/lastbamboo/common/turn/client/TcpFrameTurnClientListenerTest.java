@@ -82,9 +82,11 @@ public class TcpFrameTurnClientListenerTest
                 }
             };
         
+        final TurnStunDemuxableProtocolCodecFactory mapper = 
+            new TurnStunDemuxableProtocolCodecFactory();
         // This class just decodes the TCP frames.
         final TurnClientListener turnClientListener =
-            new TcpFrameTurnClientListener(null, delegateListener);
+            new StunTcpFrameTurnClientListener(null, delegateListener, mapper);
         
         // Here's the idea:
         // We encode a bunch of data in TCP frames.  We then combine all those

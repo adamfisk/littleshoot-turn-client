@@ -23,19 +23,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class that decodes {@link TcpFrame} data from TURN Data Indication messages.
- * All events are forwarded to the delegate listener.  This class, however,
- * uses the decorator pattern to decode {@link TcpFrame} messages and to
- * forward the raw encapsulated data on to the next delegate.<p>
- * 
- * When this class receives STUN messages instead of {@link TcpFrame} messages,
- * it forwards the STUN messages to the specified visitor.
+ * Class that processes incoming data from a TURN client that need to be
+ * demultiplexed between TCP frames and STUN messages.
  */
-public class TcpFrameTurnClientListener implements TurnClientListener
+public class StunTcpFrameTurnClientListener implements TurnClientListener
     {
     
     private final Logger m_log = LoggerFactory.getLogger(getClass());
     
+    /**
+     * We need a separate decoder for each remote address, as we can receive
+     * data from multiple remote addresses simultaneously.  This maps from
+     * those addresses to their respective decoders.
+     */
     private final Map<InetSocketAddress, ProtocolDecoder> m_addressesToDecoders =
         new ConcurrentHashMap<InetSocketAddress, ProtocolDecoder>();
     
@@ -44,19 +44,24 @@ public class TcpFrameTurnClientListener implements TurnClientListener
     private final StunMessageVisitorFactory m_stunMessageVisitorFactory;
     
     private volatile int m_totalUnframedBytes = 0;
+
+    private final TurnStunMessageMapper m_mapper;
     
     /**
      * Creates a new class that decodes {@link TcpFrame}s from incoming data.
      * 
      * @param stunMessageVisitorFactory The factory for visiting STUN messages.
      * @param delegateListener The listener to forward all events to.
+     * @param mapper Class that maps STUN transaction IDs to remote addresses.
      */
-    public TcpFrameTurnClientListener(
+    public StunTcpFrameTurnClientListener(
         final StunMessageVisitorFactory stunMessageVisitorFactory,
-        final TurnClientListener delegateListener) 
+        final TurnClientListener delegateListener, 
+        final TurnStunMessageMapper mapper) 
         {
         m_stunMessageVisitorFactory = stunMessageVisitorFactory;
         m_delegateListener = delegateListener;
+        m_mapper = mapper;
         }
 
     private int m_totalDataBytesSentToDecode;
@@ -91,6 +96,10 @@ public class TcpFrameTurnClientListener implements TurnClientListener
                     final IoHandler stunIoHandler = 
                         new StunIoHandler<StunMessage>(
                             m_stunMessageVisitorFactory);
+                    
+                    final StunMessage sm = (StunMessage) message;
+                    m_mapper.mapMessage(sm, remoteAddress);
+
                     try
                         {
                         stunIoHandler.messageReceived(session, message);
@@ -123,7 +132,6 @@ public class TcpFrameTurnClientListener implements TurnClientListener
             m_totalDataBytesSentToDecode);
         m_log.debug("Processed data...");
         }
-
 
     private ProtocolDecoder getDecoder(final InetSocketAddress remoteAddress)
         {

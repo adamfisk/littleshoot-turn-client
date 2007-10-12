@@ -77,17 +77,17 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
     private final AtomicBoolean m_connected = new AtomicBoolean(false);
     private final SocketConnector m_connector = new SocketConnector();
     private final CandidateProvider<InetSocketAddress> m_candidateProvider;
-    
+
     /**
      * Creates a new TCP TURN client.
      */
     public TcpTurnClient(final TurnClientListener clientListener, 
-        final ProtocolCodecFactory dataCodecFactory, 
-        final CandidateProvider<InetSocketAddress> candidateProvider)
+        final CandidateProvider<InetSocketAddress> candidateProvider,
+        final ProtocolCodecFactory dataCodecFactory)
         {
         m_turnClientListener = clientListener;
-        m_dataCodecFactory = dataCodecFactory;
         m_candidateProvider = candidateProvider;
+        m_dataCodecFactory = dataCodecFactory;
         // Configure the MINA buffers for optimal performance.
         ByteBuffer.setUseDirectBuffers(false);
         ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
@@ -190,8 +190,8 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         
         final ThreadModel threadModel = 
             ExecutorThreadModel.getInstance("TCP-TURN-Client");
-        //config.setThreadModel(threadModel);
-        config.setThreadModel(ThreadModel.MANUAL);
+        config.setThreadModel(threadModel);
+        //config.setThreadModel(ThreadModel.MANUAL);
         
         final IoHandler ioHandler = new TurnClientIoHandler(this);
         final ConnectFuture connectFuture; 
