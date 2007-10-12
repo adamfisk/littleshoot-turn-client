@@ -136,7 +136,25 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
         public ByteBuffer visitBindingSuccessResponse(
             final BindingSuccessResponse response)
             {
-            wrapInSendIndication(response);
+            // OK, this is weird.  Because we're using TURN here, the mapped
+            // address by default is the address of the TURN server.  That's
+            // not right, though -- the mapped address should be the address
+            // *as if from the perspective of the TURN server*, or, i.e.,
+            // the remote address from the data indication.  So we need to
+            // create a new response here using the remote address from the
+            // data indication, overwriting the original.
+            final UUID transactionId = response.getTransactionId();
+            final InetSocketAddress remoteAddress = 
+                m_transactionIdsToRemoteAddresses.get(transactionId);
+            if (remoteAddress == null)
+                {
+                LOG.warn("No matching transaction ID for: {}", response);
+                return null;
+                }            
+            final StunMessage turnResponse = 
+                new BindingSuccessResponse(transactionId.getRawBytes(), 
+                    remoteAddress);
+            wrapInSendIndication(turnResponse);
             return null;
             }
 
