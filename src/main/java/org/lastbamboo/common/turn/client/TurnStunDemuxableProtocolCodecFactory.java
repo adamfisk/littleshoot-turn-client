@@ -44,6 +44,11 @@ public class TurnStunDemuxableProtocolCodecFactory
         {
         return this.m_stunCodecFactory.canDecode(in);
         }
+    
+    public boolean enoughData(final ByteBuffer in)
+        {
+        return this.m_stunCodecFactory.enoughData(in);
+        }
 
     public Class<StunMessage> getClassToEncode()
         {
