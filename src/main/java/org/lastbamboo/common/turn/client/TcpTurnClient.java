@@ -431,6 +431,13 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         {
         return this.m_connected.get();
         }
+    
+    public boolean hostPortMapped()
+        {
+        // We don't map ports for clients (only for classes that also accept
+        // incoming connections).
+        return false;
+        }
 
     public void addIoServiceListener(final IoServiceListener serviceListener)
         {
