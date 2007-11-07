@@ -145,7 +145,9 @@ public class TcpFrameTurnClientListenerTest
             {
             readDataBuf.flip();
             final byte[] readData = MinaUtils.toByteArray(readDataBuf);
-            assertTrue("Original data not equal to read data!!", 
+            assertTrue("Original data not equal to read data:\n" +
+                "original: " + new String(originalData)+"\n" +
+                "read:     " + new String(readData), 
                 Arrays.equals(originalData, readData));
             }
         
