@@ -12,4 +12,6 @@ public interface TurnStunMessageMapper
 
     void mapMessage(StunMessage message, InetSocketAddress remoteAddress);
 
+    InetSocketAddress get(StunMessage msg);
+
     }

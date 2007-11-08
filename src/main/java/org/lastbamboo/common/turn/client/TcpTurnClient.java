@@ -234,18 +234,18 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
                     //m_connectionListener.connectionFailed();
                     return;
                     }
-                if (m_ioSession.isConnected())
+                if (m_ioSession == null || !m_ioSession.isConnected())
                     {
-                    final AllocateRequest msg = new AllocateRequest();
-    
-                    m_log.debug ("Sending allocate request to write handler...");
-                    m_ioSession.write(msg);
+                    m_log.error("Could not create session");
+                    throw new RuntimeIoException("Could not get session");
                     }
-                else
-                    {
-                    m_log.debug("Connect failed for: {}", m_ioSession);
-                    //m_connectionListener.connectionFailed();
-                    }
+                final TurnStunMessageMapper mapper = 
+                    new TurnStunMessageMapperImpl();
+                m_ioSession.setAttribute("REMOTE_ADDRESS_MAP", mapper);
+                final AllocateRequest msg = new AllocateRequest();
+
+                m_log.debug ("Sending allocate request to write handler...");
+                m_ioSession.write(msg);
                 }
             };
             

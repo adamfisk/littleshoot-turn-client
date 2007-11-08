@@ -24,25 +24,13 @@ import org.slf4j.LoggerFactory;
  * addresses the transactions are intended for.
  */
 public class TurnStunDemuxableProtocolCodecFactory
-    implements DemuxableProtocolCodecFactory<StunMessage>, TurnStunMessageMapper
+    implements DemuxableProtocolCodecFactory<StunMessage>
     {
 
     private final Logger m_log = LoggerFactory.getLogger(getClass());
     
     private final DemuxableProtocolCodecFactory<StunMessage> 
         m_stunCodecFactory = new StunDemuxableProtocolCodecFactory();
-    
-    private final Map<UUID, InetSocketAddress> m_transactionIdsToRemoteAddresses =
-        Collections.synchronizedMap(
-            new LinkedHashMap<UUID, InetSocketAddress>()
-                {
-                protected boolean removeEldestEntry(Map.Entry eldest) 
-                    {
-                    // This makes the map automatically lose the least used
-                    // entry.
-                    return size() > 300;
-                    }
-                });
     
     public boolean canDecode(final ByteBuffer in)
         {
@@ -66,19 +54,20 @@ public class TurnStunDemuxableProtocolCodecFactory
 
     public ProtocolEncoder newEncoder()
         {
-        return new TurnStunProtocolEncoder(m_transactionIdsToRemoteAddresses);
+        return new TurnStunProtocolEncoder();
         }
 
+    /*
     public void mapMessage(final StunMessage message, 
         final InetSocketAddress remoteAddress)
         {
-        final UUID id = message.getTransactionId();
-        if (m_transactionIdsToRemoteAddresses.containsKey(id))
-            {
-            m_log.warn("ID already in map: {}", id);
-            return;
-            }
-        m_transactionIdsToRemoteAddresses.put(id, remoteAddress);
+        m_mapper.mapMessage(message, remoteAddress);
         }
+
+    public Map<UUID, InetSocketAddress> getRawMap()
+        {
+        return m_mapper.getRawMap();
+        }
+    */
 
     }

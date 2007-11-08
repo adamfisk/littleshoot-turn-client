@@ -1,7 +1,6 @@
 package org.lastbamboo.common.turn.client;
 
 import java.net.InetSocketAddress;
-import java.util.Map;
 
 import org.apache.commons.id.uuid.UUID;
 import org.apache.mina.common.ByteBuffer;
@@ -38,20 +37,6 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
     {
 
     private final Logger LOG = LoggerFactory.getLogger(getClass());
-    private final Map<UUID, InetSocketAddress> m_transactionIdsToRemoteAddresses;
-
-    /**
-     * Creats a new encoder.
-     * 
-     * @param transactionIdsToRemoteAddresses The {@link Map} of STUN message
-     * transaction IDs to the associate remote addresses responses should go
-     * to.
-     */
-    public TurnStunProtocolEncoder(
-        final Map<UUID, InetSocketAddress> transactionIdsToRemoteAddresses)
-        {
-        m_transactionIdsToRemoteAddresses = transactionIdsToRemoteAddresses;
-        }
 
     public void dispose(final IoSession session) throws Exception
         {
@@ -63,8 +48,11 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
         {
         LOG.debug("Encoding TURN/STUN message: {}", msg);
         final StunMessage stunMessage = (StunMessage) msg;
+        final TurnStunMessageMapper mapper =
+            (TurnStunMessageMapper) session.getAttribute(
+                "REMOTE_ADDRESS_MAP");
         final StunMessageVisitor<ByteBuffer> visitor = 
-            new SendIndicationStunMessageVisitor(out);
+            new SendIndicationStunMessageVisitor(out, mapper);
         stunMessage.accept(visitor);
         }
     
@@ -73,20 +61,22 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
         {
         
         private final ProtocolEncoderOutput m_out;
+        private final TurnStunMessageMapper m_mapper;
 
         private SendIndicationStunMessageVisitor(
-            final ProtocolEncoderOutput out)
+            final ProtocolEncoderOutput out, 
+            final TurnStunMessageMapper mapper)
             {
             m_out = out;
+            m_mapper = mapper;
             }
 
         private void wrapInSendIndication(final StunMessage msg)
             {
             final StunMessageEncoder encoder = new StunMessageEncoder();
             final ByteBuffer buf = encoder.encode(msg);
-            final InetSocketAddress remoteAddress = 
-                m_transactionIdsToRemoteAddresses.get(
-                    msg.getTransactionId());
+            
+            final InetSocketAddress remoteAddress = m_mapper.get(msg);
             if (remoteAddress == null)
                 {
                 LOG.warn("No matching transaction ID for: {}", msg);
@@ -143,14 +133,13 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
             // the remote address from the data indication.  So we need to
             // create a new response here using the remote address from the
             // data indication, overwriting the original.
-            final UUID transactionId = response.getTransactionId();
-            final InetSocketAddress remoteAddress = 
-                m_transactionIdsToRemoteAddresses.get(transactionId);
+            final InetSocketAddress remoteAddress = m_mapper.get(response);
             if (remoteAddress == null)
                 {
                 LOG.warn("No matching transaction ID for: {}", response);
                 return null;
-                }            
+                }      
+            final UUID transactionId = response.getTransactionId();
             final StunMessage turnResponse = 
                 new BindingSuccessResponse(transactionId.getRawBytes(), 
                     remoteAddress);

@@ -5,14 +5,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.common.IoHandler;
 import org.apache.mina.common.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
 import org.apache.mina.filter.codec.ProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.lastbamboo.common.stun.stack.StunDemuxableProtocolCodecFactory;
-import org.lastbamboo.common.stun.stack.StunIoHandler;
 import org.lastbamboo.common.stun.stack.message.StunMessage;
+import org.lastbamboo.common.stun.stack.message.StunMessageVisitor;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorFactory;
 import org.lastbamboo.common.tcp.frame.TcpFrame;
 import org.lastbamboo.common.tcp.frame.TcpFrameCodecFactory;
@@ -45,7 +44,7 @@ public class StunTcpFrameTurnClientListener implements TurnClientListener
     
     private volatile int m_totalUnframedBytes = 0;
 
-    private final TurnStunMessageMapper m_mapper;
+    //private final TurnStunMessageMapper m_mapper;
     
     /**
      * Creates a new class that decodes {@link TcpFrame}s from incoming data.
@@ -56,12 +55,11 @@ public class StunTcpFrameTurnClientListener implements TurnClientListener
      */
     public StunTcpFrameTurnClientListener(
         final StunMessageVisitorFactory stunMessageVisitorFactory,
-        final TurnClientListener delegateListener, 
-        final TurnStunMessageMapper mapper) 
+        final TurnClientListener delegateListener) 
         {
         m_stunMessageVisitorFactory = stunMessageVisitorFactory;
         m_delegateListener = delegateListener;
-        m_mapper = mapper;
+        //m_mapper = mapper;
         }
 
     private int m_totalDataBytesSentToDecode;
@@ -93,16 +91,19 @@ public class StunTcpFrameTurnClientListener implements TurnClientListener
                     }
                 else if (StunMessage.class.isAssignableFrom(message.getClass()))
                     {
-                    final IoHandler stunIoHandler = 
-                        new StunIoHandler<StunMessage>(
-                            m_stunMessageVisitorFactory);
-                    
                     final StunMessage sm = (StunMessage) message;
-                    m_mapper.mapMessage(sm, remoteAddress);
-
+                    //m_mapper.mapMessage(sm, remoteAddress);
+                    
+                    final TurnStunMessageMapper mapper =
+                        (TurnStunMessageMapper) session.getAttribute(
+                            "REMOTE_ADDRESS_MAP");
+                    mapper.mapMessage(sm, remoteAddress);
+                    
+                    final StunMessageVisitor visitor = 
+                        m_stunMessageVisitorFactory.createVisitor(session);
                     try
                         {
-                        stunIoHandler.messageReceived(session, message);
+                        sm.accept(visitor);
                         }
                     catch (final Exception e)
                         {
