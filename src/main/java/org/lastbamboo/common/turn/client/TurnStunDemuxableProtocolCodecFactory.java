@@ -18,8 +18,10 @@ import org.slf4j.LoggerFactory;
 /**
  * {@link DemuxableProtocolCodecFactory} for STUN.  This is slightly 
  * specialized for TURN because we need to wrap messages in Send Indications.
- * For STUN, we do this by mapping message transaction IDs to remote addresses
- * the transactions are intended for.
+ * Send Indications require a REMOTE-ADDRESS attribute, but we lose the
+ * remote address from the Data Indication unless we record it, which we do
+ * here.  For STUN, we do this by mapping message transaction IDs to remote 
+ * addresses the transactions are intended for.
  */
 public class TurnStunDemuxableProtocolCodecFactory
     implements DemuxableProtocolCodecFactory<StunMessage>, TurnStunMessageMapper
@@ -36,6 +38,8 @@ public class TurnStunDemuxableProtocolCodecFactory
                 {
                 protected boolean removeEldestEntry(Map.Entry eldest) 
                     {
+                    // This makes the map automatically lose the least used
+                    // entry.
                     return size() > 300;
                     }
                 });

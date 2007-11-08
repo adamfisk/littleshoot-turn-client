@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class that processes incoming data from a TURN client that need to be
+ * Class that processes incoming data from a TURN client that needs to be
  * demultiplexed between TCP frames and STUN messages.
  */
 public class StunTcpFrameTurnClientListener implements TurnClientListener
