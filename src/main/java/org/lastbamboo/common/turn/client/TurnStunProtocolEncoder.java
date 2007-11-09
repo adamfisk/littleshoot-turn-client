@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
     {
 
-    private final Logger LOG = LoggerFactory.getLogger(getClass());
+    private final Logger m_log = LoggerFactory.getLogger(getClass());
 
     public void dispose(final IoSession session) throws Exception
         {
@@ -46,7 +46,7 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
     public void encode(final IoSession session, final Object msg,
         final ProtocolEncoderOutput out) throws Exception
         {
-        LOG.debug("Encoding TURN/STUN message: {}", msg);
+        m_log.debug("Encoding TURN/STUN message: {}", msg);
         final StunMessage stunMessage = (StunMessage) msg;
         final TurnStunMessageMapper mapper =
             (TurnStunMessageMapper) session.getAttribute(
@@ -79,11 +79,12 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
             final InetSocketAddress remoteAddress = m_mapper.get(msg);
             if (remoteAddress == null)
                 {
-                LOG.warn("No matching transaction ID for: {}", msg);
+                m_log.warn("No matching transaction ID for: {} in {}", msg, 
+                    m_mapper);
                 return;
                 }
             final byte[] bytes = MinaUtils.toByteArray(buf);
-            LOG.debug("Sending TCP framed data of length: {}", bytes.length);
+            m_log.debug("Sending TCP framed data of length: {}", bytes.length);
             final SendIndication indication = 
                 new SendIndication(remoteAddress, bytes);
             final ByteBuffer indicationBuf = encoder.encode(indication);
@@ -96,7 +97,7 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
             final ByteBuffer buf = encoder.encode(msg);
             if (buf == null)
                 {
-                LOG.error("Null buffer for message: {}", msg);
+                m_log.error("Null buffer for message: {}", msg);
                 }
             else
                 {
@@ -136,7 +137,7 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
             final InetSocketAddress remoteAddress = m_mapper.get(response);
             if (remoteAddress == null)
                 {
-                LOG.warn("No matching transaction ID for: {}", response);
+                m_log.warn("No matching transaction ID for: {}", response);
                 return null;
                 }      
             final UUID transactionId = response.getTransactionId();
@@ -158,7 +159,7 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
             {
             // This is a weird case.  Other protocols, such as TCP framing,
             // may already wrap their data in Send Indications.
-            LOG.debug("Writing send indication...");
+            m_log.debug("Writing send indication...");
             noWrap(request);
             return null;
             }
@@ -166,44 +167,46 @@ public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
         public ByteBuffer visitAllocateErrorResponse(
             final AllocateErrorResponse response)
             {
-            LOG.warn("Unexpected message: {}", response);
+            m_log.warn("Unexpected message: {}", response);
             return null;
             }
         
-        public ByteBuffer visitAllocateSuccessResponse(AllocateSuccessResponse response)
+        public ByteBuffer visitAllocateSuccessResponse(
+            final AllocateSuccessResponse response)
             {
-            LOG.warn("Unexpected message: {}", response);
+            m_log.warn("Unexpected message: {}", response);
             return null;
             }
         
-        public ByteBuffer visitConnectErrorMesssage(ConnectErrorStunMessage message)
+        public ByteBuffer visitConnectErrorMesssage(
+            final ConnectErrorStunMessage message)
             {
-            LOG.warn("Unexpected message: {}", message);
+            m_log.warn("Unexpected message: {}", message);
             return null;
             }
 
-        public ByteBuffer visitConnectRequest(ConnectRequest request)
+        public ByteBuffer visitConnectRequest(final ConnectRequest request)
             {
-            LOG.warn("Unexpected message: {}", request);
+            m_log.warn("Unexpected message: {}", request);
             return null;
             }
 
         public ByteBuffer visitConnectionStatusIndication(
             final ConnectionStatusIndication indication)
             {
-            LOG.warn("Unexpected message: {}", indication);
+            m_log.warn("Unexpected message: {}", indication);
             return null;
             }
 
         public ByteBuffer visitDataIndication(final DataIndication data)
             {
-            LOG.warn("Unexpected message: {}", data);
+            m_log.warn("Unexpected message: {}", data);
             return null;
             }
 
         public ByteBuffer visitNullMessage(final NullStunMessage message)
             {
-            LOG.warn("Unexpected message: {}", message);
+            m_log.warn("Unexpected message: {}", message);
             return null;
             }
         }

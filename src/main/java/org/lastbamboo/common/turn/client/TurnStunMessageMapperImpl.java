@@ -40,7 +40,15 @@ public class TurnStunMessageMapperImpl implements TurnStunMessageMapper
         final UUID id = message.getTransactionId();
         if (m_transactionIdsToRemoteAddresses.containsKey(id))
             {
-            m_log.warn("ID already in map: {}", id);
+            m_log.debug("ID already in map for message: {}", message);
+            final InetSocketAddress storedAddress = 
+                m_transactionIdsToRemoteAddresses.get(id);
+            if (!remoteAddress.equals(storedAddress))
+                {
+                m_log.error("Address mappings incorrect!!\n" +
+                    "Stored:   {}\n" +
+                    "Received: {}", storedAddress, remoteAddress);
+                }
             return;
             }
         m_transactionIdsToRemoteAddresses.put(id, remoteAddress);
