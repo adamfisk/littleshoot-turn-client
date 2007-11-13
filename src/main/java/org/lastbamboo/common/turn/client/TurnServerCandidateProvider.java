@@ -39,4 +39,9 @@ public final class TurnServerCandidateProvider
         servers.add(turnServer);
         return servers;
         }
+
+    public InetSocketAddress getCandidate()
+        {
+        return getCandidates().iterator().next();
+        }
     }
