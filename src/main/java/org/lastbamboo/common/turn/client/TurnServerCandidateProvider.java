@@ -2,10 +2,13 @@ package org.lastbamboo.common.turn.client;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.lastbamboo.common.http.client.HttpClientGetRequester;
 import org.lastbamboo.common.stun.stack.StunConstants;
 import org.lastbamboo.common.util.CandidateProvider;
 
@@ -21,18 +24,21 @@ public final class TurnServerCandidateProvider
     private static final Log LOG =
         LogFactory.getLog (TurnServerCandidateProvider.class);
 
+    private static final String API_URL = 
+        "http://www.lastbamboo.org/lastbamboo-server-site/api/sipServer";
+    
     /**
      * {@inheritDoc}
      */
     public Collection<InetSocketAddress> getCandidates()
         {
         LOG.debug("Accessing TURN servers...");
-        // TODO: We need to access the list of TURN servers available from
-        // S3.  Same for SIP.
-        final InetSocketAddress turnServer =
-            new InetSocketAddress(
-                "ec2-67-202-6-199.z-1.compute-1.amazonaws.com", 
-                StunConstants.STUN_PORT);
+        final InetSocketAddress turnServer = getCandidate();
+        if (turnServer == null)
+            {
+            LOG.error("Could not access TURN servers!!!");
+            return Collections.emptySet();
+            }
         final Collection<InetSocketAddress> servers = 
             new LinkedList<InetSocketAddress>();
         
@@ -42,6 +48,17 @@ public final class TurnServerCandidateProvider
 
     public InetSocketAddress getCandidate()
         {
-        return getCandidates().iterator().next();
+        final HttpClientGetRequester requester = 
+            new HttpClientGetRequester();
+        final String data = requester.request(API_URL);
+        if (StringUtils.isBlank(data) || !data.contains(":"))
+            {
+            LOG.error("Bad data from server: " + data);
+            return null;
+            }
+        final String host = StringUtils.substringBefore(data, ":");
+
+        // Note we ignore the port and just use the default TURN port.
+        return new InetSocketAddress(host, StunConstants.STUN_PORT);
         }
     }
