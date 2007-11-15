@@ -26,7 +26,7 @@ public class TurnStunMessageMapperImpl implements TurnStunMessageMapper
         Collections.synchronizedMap(
             new LinkedHashMap<UUID, InetSocketAddress>()
                 {
-                protected boolean removeEldestEntry(Map.Entry eldest) 
+                protected boolean removeEldestEntry(final Map.Entry eldest) 
                     {
                     // This makes the map automatically lose the least used
                     // entry.
