@@ -6,10 +6,10 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.lastbamboo.common.http.client.HttpClientGetRequester;
-import org.lastbamboo.common.stun.stack.StunConstants;
 import org.lastbamboo.common.util.CandidateProvider;
 
 /**
@@ -25,7 +25,7 @@ public final class TurnServerCandidateProvider
         LogFactory.getLog (TurnServerCandidateProvider.class);
 
     private static final String API_URL = 
-        "http://www.lastbamboo.org/lastbamboo-server-site/api/sipServer";
+        "http://www.lastbamboo.org/lastbamboo-server-site/api/turnServer";
     
     /**
      * {@inheritDoc}
@@ -57,8 +57,12 @@ public final class TurnServerCandidateProvider
             return null;
             }
         final String host = StringUtils.substringBefore(data, ":");
-
-        // Note we ignore the port and just use the default TURN port.
-        return new InetSocketAddress(host, StunConstants.STUN_PORT);
+        final String portString = StringUtils.substringAfter(data, ":");
+        if (!NumberUtils.isNumber(portString))
+            {
+            LOG.error("Bad port: "+portString);
+            return null;
+            }
+        return new InetSocketAddress(host, Integer.parseInt(portString));
         }
     }
