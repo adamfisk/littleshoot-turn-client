@@ -1,5 +1,6 @@
 package org.lastbamboo.common.turn.client;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,7 +51,16 @@ public final class TurnServerCandidateProvider
         {
         final HttpClientGetRequester requester = 
             new HttpClientGetRequester();
-        final String data = requester.request(API_URL);
+        final String data;
+        try
+            {
+            data = requester.request(API_URL);
+            }
+        catch (final IOException e)
+            {
+            LOG.error("Could not access TURN server data");
+            return null;
+            }
         if (StringUtils.isBlank(data) || !data.contains(":"))
             {
             LOG.error("Bad data from server: " + data);
