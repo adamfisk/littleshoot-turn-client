@@ -7,9 +7,11 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.lastbamboo.common.http.client.HttpClientGetRequester;
 import org.lastbamboo.common.util.CandidateProvider;
 
@@ -49,30 +51,42 @@ public final class TurnServerCandidateProvider
 
     public InetSocketAddress getCandidate()
         {
+        return getSocketAddress();
+        }
+    
+    private static InetSocketAddress getSocketAddress()
+        {
         final HttpClientGetRequester requester = 
             new HttpClientGetRequester();
         final String data;
         try
             {
+            // Note this will automatically decompress the body if necessary.
             data = requester.request(API_URL);
             }
         catch (final IOException e)
             {
-            LOG.error("Could not access TURN server data");
+            LOG.error("Could not access SIP server data");
             return null;
             }
-        if (StringUtils.isBlank(data) || !data.contains(":"))
+        if (StringUtils.isBlank(data))
             {
             LOG.error("Bad data from server: " + data);
             return null;
             }
-        final String host = StringUtils.substringBefore(data, ":");
-        final String portString = StringUtils.substringAfter(data, ":");
-        if (!NumberUtils.isNumber(portString))
+        
+        try
             {
-            LOG.error("Bad port: "+portString);
+            final JSONObject json = new JSONObject(data);
+            final JSONArray servers = json.getJSONArray("servers");
+            final JSONObject server = servers.getJSONObject(0);
+            return new InetSocketAddress(server.getString("address"), 
+                server.getInt("port"));
+            }
+        catch (final JSONException e)
+            {
+            LOG.error("Could not read JSON: "+data, e);
             return null;
             }
-        return new InetSocketAddress(host, Integer.parseInt(portString));
         }
     }

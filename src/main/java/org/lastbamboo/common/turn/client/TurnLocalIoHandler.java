@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * HTTP server, with the data already extracted from the TURN messages and
  * forwarded along these sockets.<p>
  * 
- * This class is also responsible for wraping data from the HTTP server
+ * This class is also responsible for wrapping data from the HTTP server
  * in TURN Send Indication messages.
  */
 public class TurnLocalIoHandler extends IoHandlerAdapter
