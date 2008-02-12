@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.lastbamboo.common.http.client.HttpClientGetRequester;
 import org.lastbamboo.common.util.CandidateProvider;
+import org.lastbamboo.common.util.ShootConstants;
 
 /**
  * The candidate provider that provides candidate TURN servers.
@@ -28,7 +29,7 @@ public final class TurnServerCandidateProvider
         LogFactory.getLog (TurnServerCandidateProvider.class);
 
     private static final String API_URL = 
-        "http://www.lastbamboo.org/lastbamboo-server-site/api/turnServer";
+        ShootConstants.SERVER_URL+"/api/turnServer";
     
     /**
      * {@inheritDoc}
