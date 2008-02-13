@@ -4,15 +4,12 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.lastbamboo.common.http.client.HttpClientGetRequester;
+import org.lastbamboo.common.json.JsonUtils;
 import org.lastbamboo.common.util.CandidateProvider;
 import org.lastbamboo.common.util.ShootConstants;
 
@@ -31,34 +28,28 @@ public final class TurnServerCandidateProvider
     private static final String API_URL = 
         ShootConstants.SERVER_URL+"/api/turnServer";
     
-    /**
-     * {@inheritDoc}
-     */
     public Collection<InetSocketAddress> getCandidates()
         {
         LOG.debug("Accessing TURN servers...");
-        final InetSocketAddress turnServer = getCandidate();
-        if (turnServer == null)
+        final String data = getData();
+        if (StringUtils.isBlank(data))
             {
-            LOG.error("Could not access TURN servers!!!");
+            LOG.error("Bad data from server: " + data);
             return Collections.emptySet();
             }
-        final Collection<InetSocketAddress> servers = 
-            new LinkedList<InetSocketAddress>();
-        
-        servers.add(turnServer);
-        return servers;
-        }
-
-    public InetSocketAddress getCandidate()
-        {
-        return getSocketAddress();
+        return JsonUtils.getInetAddresses(data);
         }
     
-    private static InetSocketAddress getSocketAddress()
+    public InetSocketAddress getCandidate()
         {
-        final HttpClientGetRequester requester = 
-            new HttpClientGetRequester();
+        final Collection<InetSocketAddress> candidates = getCandidates();
+        if (candidates.isEmpty()) return null;
+        return candidates.iterator().next();
+        }
+
+    private String getData()
+        {
+        final HttpClientGetRequester requester = new HttpClientGetRequester();
         final String data;
         try
             {
@@ -70,24 +61,6 @@ public final class TurnServerCandidateProvider
             LOG.error("Could not access SIP server data");
             return null;
             }
-        if (StringUtils.isBlank(data))
-            {
-            LOG.error("Bad data from server: " + data);
-            return null;
-            }
-        
-        try
-            {
-            final JSONObject json = new JSONObject(data);
-            final JSONArray servers = json.getJSONArray("servers");
-            final JSONObject server = servers.getJSONObject(0);
-            return new InetSocketAddress(server.getString("address"), 
-                server.getInt("port"));
-            }
-        catch (final JSONException e)
-            {
-            LOG.error("Could not read JSON: "+data, e);
-            return null;
-            }
+        return data;
         }
     }
