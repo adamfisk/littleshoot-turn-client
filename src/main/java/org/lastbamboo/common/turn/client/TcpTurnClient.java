@@ -117,24 +117,31 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         final Collection<InetSocketAddress> candidates = 
             this.m_candidateProvider.getCandidates();
 
-        final InetSocketAddress serverAddress = candidates.iterator().next();
-        connect(serverAddress, null);
-        synchronized (this.m_connected)
+        for (final InetSocketAddress serverAddress : candidates)
             {
-            try
+            connect(serverAddress, null);
+            synchronized (this.m_connected)
                 {
-                this.m_connected.wait(20 * 1000);
+                try
+                    {
+                    this.m_connected.wait(20 * 1000);
+                    }
+                catch (final InterruptedException e)
+                    {
+                    m_log.error("Interrupted while waiting", e);
+                    }
                 }
-            catch (final InterruptedException e)
+            
+            if (isConnected())
                 {
-                m_log.error("Interrupted while waiting", e);
+                m_log.debug("Connected to: {}", serverAddress);
+                break;
                 }
             }
-        
         if (!isConnected())
             {
             m_log.error("Could not connect or did not get allocate response");
-            throw new RuntimeIoException("Could not connect!!");
+            throw new RuntimeIoException("Could not connect to any of: " + candidates);
             }
         }
     
