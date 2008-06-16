@@ -236,7 +236,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
                 catch (final RuntimeIOException e)
                     {
                     // This seems to get thrown when we can't connect at all.
-                    m_log.warn("Could not connect to TURN server at: {}", 
+                    m_log.warn("Could not connect to TURN server at: " + 
                         stunServerAddress, e);
                     //m_connectionListener.connectionFailed();
                     return;
