@@ -6,6 +6,7 @@ import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.lang.SystemUtils;
 import org.apache.mina.common.ByteBuffer;
 import org.apache.mina.common.CloseFuture;
 import org.apache.mina.common.ConnectFuture;
@@ -199,10 +200,16 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         //m_connectionListener = listener;
         m_stunServerAddress = stunServerAddress;
         final SocketConnectorConfig config = new SocketConnectorConfig();
+        
+        // Java has weird issues with the new networking stack in Windows Vista.
+        if (SystemUtils.IS_OS_WINDOWS_VISTA)
+            {
+            config.getSessionConfig().setKeepAlive(false);
+            }
         config.getSessionConfig().setReuseAddress(true);
         
         final ThreadModel threadModel = 
-            ExecutorThreadModel.getInstance("TCP-TURN-Client");
+            ExecutorThreadModel.getInstance("TCP-TURN-Client-"+hashCode());
         config.setThreadModel(threadModel);
         //config.setThreadModel(ThreadModel.MANUAL);
         
@@ -307,6 +314,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
             }
         return null;
         }
+    
     
     @Override
     public StunMessage visitAllocateErrorResponse(
