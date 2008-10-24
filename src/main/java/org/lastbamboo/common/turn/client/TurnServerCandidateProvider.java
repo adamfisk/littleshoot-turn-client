@@ -59,12 +59,12 @@ public final class TurnServerCandidateProvider
             }
         catch (final IOException e)
             {
-            LOG.error("Could not access SIP server data");
+            LOG.error("Could not access TURN server data");
             return null;
             }
         catch (final ServiceUnavailableException e)
             {
-            LOG.error("Could not access SIP server data");
+            LOG.error("Could not access TURN server data");
             return null;
             }
         return data;
