@@ -59,12 +59,12 @@ public final class TurnServerCandidateProvider
             }
         catch (final IOException e)
             {
-            LOG.error("Could not access TURN server data");
+            LOG.error("Could not access TURN server data", e);
             return null;
             }
         catch (final ServiceUnavailableException e)
             {
-            LOG.error("Could not access TURN server data");
+            LOG.error("Could not access TURN server data", e);
             return null;
             }
         return data;
