@@ -1,5 +1,6 @@
 package org.lastbamboo.common.turn.client;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -109,7 +110,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
         }
     
-    public void connect()
+    public void connect() throws IOException
         {
         if (this.m_connected.get())
             {
@@ -125,7 +126,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
                 {
                 try
                     {
-                    this.m_connected.wait(20 * 1000);
+                    this.m_connected.wait(30 * 1000);
                     }
                 catch (final InterruptedException e)
                     {
@@ -142,7 +143,8 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         if (!isConnected())
             {
             m_log.error("Could not connect or did not get allocate response");
-            throw new RuntimeIoException("Could not connect to any of: " + candidates);
+            close();
+            throw new IOException("Could not connect to any of: " + candidates);
             }
         }
     
@@ -205,6 +207,10 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         if (SystemUtils.IS_OS_WINDOWS_VISTA)
             {
             config.getSessionConfig().setKeepAlive(false);
+            }
+        else
+            {
+            config.getSessionConfig().setKeepAlive(true);
             }
         config.getSessionConfig().setReuseAddress(true);
         
@@ -269,6 +275,7 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
     
     public void close()
         {
+        m_log.debug("Closing TCP TURN client.");
         if (this.m_ioSession != null)
             {
             final CloseFuture closeFuture = this.m_ioSession.close();
