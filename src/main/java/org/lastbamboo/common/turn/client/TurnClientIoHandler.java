@@ -7,7 +7,6 @@ import org.apache.mina.common.IoSession;
 import org.apache.mina.util.SessionUtil;
 import org.lastbamboo.common.stun.stack.message.StunMessage;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitor;
-import org.lastbamboo.common.stun.stack.message.turn.AllocateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,17 +30,20 @@ public class TurnClientIoHandler extends IoHandlerAdapter
         m_visitor = visitor;
         }
 
+    @Override
     public void messageReceived(final IoSession session, final Object message)
         {
         final StunMessage vsm = (StunMessage) message;
         vsm.accept(this.m_visitor);
         }
     
+    @Override
     public void sessionClosed(final IoSession session)
         {
         // This is taken care of through an IoServiceListener.
         }
     
+    @Override
     public void sessionCreated(final IoSession session)
         {
         SessionUtil.initialize(session);
@@ -55,13 +57,26 @@ public class TurnClientIoHandler extends IoHandlerAdapter
         session.setIdleTime(IdleStatus.WRITER_IDLE, 60 * 4);
         }
 
+    @Override
     public void sessionIdle(final IoSession session, final IdleStatus status) 
         {
         LOG.debug("Session idle...issue new Allocate Request...");
-        final AllocateRequest request = new AllocateRequest();
-        session.write(request);
+        
+        //final AllocateRequest request = new AllocateRequest();
+        //session.write(request);
+        
+        // We used to issue a new allocate request in this case to make sure
+        // the server keeps the TURN connection up.  This only makes sense
+        // for maintaining long-lived TURN connections, though.  In our case,
+        // if a connection is idle, it's not being used for a file transfer,
+        // so we should close it.
+        
+        // Note we ideally should not rely on this behavior, instead closing
+        // TURN connections whenever we know they're not used.
+        session.close();
         }
     
+    @Override
     public void exceptionCaught(final IoSession session, final Throwable cause)
         {
         LOG.warn("Caught exception", cause);
