@@ -60,7 +60,7 @@ public class TurnClientIoHandler extends IoHandlerAdapter
     @Override
     public void sessionIdle(final IoSession session, final IdleStatus status) 
         {
-        LOG.debug("Session idle...issue new Allocate Request...");
+        LOG.debug("Session idle...closing TURN connection to server...");
         
         //final AllocateRequest request = new AllocateRequest();
         //session.write(request);
