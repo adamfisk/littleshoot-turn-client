@@ -54,7 +54,12 @@ public class TurnClientIoHandler extends IoHandlerAdapter
         // NATs reset their timers only on writes.  At least we can be 
         // relatively sure a write will do the trick, whereas we're not so
         // sure with a read.
-        session.setIdleTime(IdleStatus.WRITER_IDLE, 60 * 4);
+        //session.setIdleTime(IdleStatus.WRITER_IDLE, 60 * 4);
+        
+        
+        // Note we ignore the above that's targeted at long-lived TURN 
+        // connections.  We consider the session idle fairly quickly.  
+        session.setIdleTime(IdleStatus.WRITER_IDLE, 80);
         }
 
     @Override
