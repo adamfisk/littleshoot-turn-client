@@ -434,19 +434,20 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
     public StunMessage write(final BindingRequest request, 
         final InetSocketAddress remoteAddress)
         {
-        // TODO Same as above.  We should just send the request to the server,
+        // TODO We should just send the request to the server,
         // and we should combine the functionality of this class with the 
         // functionality of TcpStunClient.
+        // Or is this just handled by IceStunCheckers??
         m_log.error("Unsupported!!!!!!!");
-        throw new NotYetImplementedException("Not implemented.");
+        throw new IllegalStateException("Not implemented.");
         }
 
     public StunMessage write(final BindingRequest request, 
         final InetSocketAddress remoteAddress, final long rto)
         {
-        // TODO Auto-generated method stub
+        // See comment above.
         m_log.error("Unsupported!!!!!!!");
-        throw new NotYetImplementedException("Not implemented.");
+        throw new IllegalStateException("Not implemented.");
         }
 
     public boolean isConnected()
