@@ -41,7 +41,6 @@ import org.lastbamboo.common.stun.stack.message.turn.ConnectRequest;
 import org.lastbamboo.common.stun.stack.message.turn.ConnectionStatusIndication;
 import org.lastbamboo.common.stun.stack.message.turn.DataIndication;
 import org.lastbamboo.common.util.CandidateProvider;
-import org.lastbamboo.common.util.NotYetImplementedException;
 import org.lastbamboo.common.util.RuntimeIoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
