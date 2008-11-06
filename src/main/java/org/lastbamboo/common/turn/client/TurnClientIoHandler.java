@@ -48,17 +48,8 @@ public class TurnClientIoHandler extends IoHandlerAdapter
         {
         SessionUtil.initialize(session);
         
-        // The idle time is in seconds.  Many NATs kill TCP bindings after 
-        // about 10 minutes, although there's a lot of variation between
-        // implementations.  We use the writer here because I believe many
-        // NATs reset their timers only on writes.  At least we can be 
-        // relatively sure a write will do the trick, whereas we're not so
-        // sure with a read.
-        //session.setIdleTime(IdleStatus.WRITER_IDLE, 60 * 4);
-        
-        
-        // Note we ignore the above that's targeted at long-lived TURN 
-        // connections.  We consider the session idle fairly quickly.  
+        // We consider the session idle fairly quickly to free up expensive
+        // resources.
         session.setIdleTime(IdleStatus.WRITER_IDLE, 80);
         }
 
