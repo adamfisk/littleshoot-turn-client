@@ -29,8 +29,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Encodes bytes into STUN messages with the additional step of wrapping 
- * certaing messages in TURN Send Indications.  This will in particular
- * wrap messages that are only written when wraping is necessary, such as
+ * certain messages in TURN Send Indications.  This will in particular
+ * wrap messages that are only written when wrapping is necessary, such as
  * Binding Responses used with ICE.  
  */
 public class TurnStunProtocolEncoder implements DemuxableProtocolEncoder
