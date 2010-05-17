@@ -83,11 +83,13 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
      * @param clientListener The listener for TURN client events.
      * @param codecFactory The codec factory.
      */
+    /*
     public TcpTurnClient(final TurnClientListener clientListener,
         final ProtocolCodecFactory codecFactory)
         {
         this(clientListener, new TurnServerCandidateProvider(), codecFactory);
         }
+        */
     
     /**
      * Creates a new TCP TURN client.

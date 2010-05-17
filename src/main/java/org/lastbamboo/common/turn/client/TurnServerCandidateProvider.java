@@ -29,6 +29,11 @@ public final class TurnServerCandidateProvider
     private static final String API_URL = 
         ShootConstants.SERVER_URL+"/api/turnServer";
     
+    public TurnServerCandidateProvider()
+    {
+        
+    }
+    
     public Collection<InetSocketAddress> getCandidates()
         {
         LOG.debug("Accessing TURN servers...");
