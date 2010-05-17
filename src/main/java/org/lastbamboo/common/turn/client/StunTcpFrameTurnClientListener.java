@@ -4,11 +4,11 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.common.IoSession;
-import org.apache.mina.filter.codec.ProtocolCodecFactory;
-import org.apache.mina.filter.codec.ProtocolDecoder;
-import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.littleshoot.mina.common.ByteBuffer;
+import org.littleshoot.mina.common.IoSession;
+import org.littleshoot.mina.filter.codec.ProtocolCodecFactory;
+import org.littleshoot.mina.filter.codec.ProtocolDecoder;
+import org.littleshoot.mina.filter.codec.ProtocolDecoderOutput;
 import org.lastbamboo.common.stun.stack.StunDemuxableProtocolCodecFactory;
 import org.lastbamboo.common.stun.stack.message.StunMessage;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitor;

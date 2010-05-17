@@ -3,12 +3,12 @@ package org.lastbamboo.common.turn.client;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.common.IdleStatus;
-import org.apache.mina.common.IoHandler;
-import org.apache.mina.common.IoHandlerAdapter;
-import org.apache.mina.common.IoSession;
-import org.apache.mina.util.SessionUtil;
+import org.littleshoot.mina.common.ByteBuffer;
+import org.littleshoot.mina.common.IdleStatus;
+import org.littleshoot.mina.common.IoHandler;
+import org.littleshoot.mina.common.IoHandlerAdapter;
+import org.littleshoot.mina.common.IoSession;
+import org.littleshoot.mina.util.SessionUtil;
 import org.lastbamboo.common.stun.stack.message.turn.SendIndication;
 import org.lastbamboo.common.tcp.frame.TcpFrame;
 import org.lastbamboo.common.tcp.frame.TcpFrameEncoder;

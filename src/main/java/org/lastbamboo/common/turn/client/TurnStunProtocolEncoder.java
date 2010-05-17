@@ -3,9 +3,9 @@ package org.lastbamboo.common.turn.client;
 import java.net.InetSocketAddress;
 
 import org.apache.commons.id.uuid.UUID;
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.common.IoSession;
-import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+import org.littleshoot.mina.common.ByteBuffer;
+import org.littleshoot.mina.common.IoSession;
+import org.littleshoot.mina.filter.codec.ProtocolEncoderOutput;
 import org.lastbamboo.common.stun.stack.encoder.StunMessageEncoder;
 import org.lastbamboo.common.stun.stack.message.BindingErrorResponse;
 import org.lastbamboo.common.stun.stack.message.BindingRequest;

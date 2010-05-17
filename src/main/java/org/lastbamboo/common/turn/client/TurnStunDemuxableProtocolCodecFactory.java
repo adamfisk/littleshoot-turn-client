@@ -6,8 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.id.uuid.UUID;
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.filter.codec.ProtocolEncoder;
+import org.littleshoot.mina.common.ByteBuffer;
+import org.littleshoot.mina.filter.codec.ProtocolEncoder;
 import org.lastbamboo.common.stun.stack.StunDemuxableProtocolCodecFactory;
 import org.lastbamboo.common.stun.stack.message.StunMessage;
 import org.lastbamboo.common.util.mina.DemuxableProtocolCodecFactory;

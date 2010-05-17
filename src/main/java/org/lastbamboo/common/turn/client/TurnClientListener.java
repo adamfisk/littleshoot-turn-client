@@ -2,7 +2,7 @@ package org.lastbamboo.common.turn.client;
 
 import java.net.InetSocketAddress;
 
-import org.apache.mina.common.IoSession;
+import org.littleshoot.mina.common.IoSession;
 
 /**
  * Interface for classes that listen for TURN client events. 

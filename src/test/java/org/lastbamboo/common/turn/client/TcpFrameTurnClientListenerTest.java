@@ -15,8 +15,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.math.RandomUtils;
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.common.IoSession;
+import org.littleshoot.mina.common.ByteBuffer;
+import org.littleshoot.mina.common.IoSession;
 import org.junit.Test;
 import org.lastbamboo.common.tcp.frame.TcpFrame;
 import org.lastbamboo.common.tcp.frame.TcpFrameEncoder;
