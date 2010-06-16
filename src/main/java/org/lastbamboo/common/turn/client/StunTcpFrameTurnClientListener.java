@@ -44,7 +44,7 @@ public class StunTcpFrameTurnClientListener implements TurnClientListener
     
     private volatile int m_totalUnframedBytes = 0;
 
-    //private final TurnStunMessageMapper m_mapper;
+    private int m_totalDataBytesSentToDecode;
     
     /**
      * Creates a new class that decodes {@link TcpFrame}s from incoming data.
@@ -59,11 +59,8 @@ public class StunTcpFrameTurnClientListener implements TurnClientListener
         {
         m_stunMessageVisitorFactory = stunMessageVisitorFactory;
         m_delegateListener = delegateListener;
-        //m_mapper = mapper;
         }
 
-    private int m_totalDataBytesSentToDecode;
-    
     public void onData(final InetSocketAddress remoteAddress, 
         final IoSession session, final byte[] data) 
         {

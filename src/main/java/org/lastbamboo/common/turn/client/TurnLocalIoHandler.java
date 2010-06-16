@@ -3,16 +3,14 @@ package org.lastbamboo.common.turn.client;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 
+import org.lastbamboo.common.stun.stack.message.turn.SendIndication;
+import org.lastbamboo.common.util.mina.MinaUtils;
 import org.littleshoot.mina.common.ByteBuffer;
 import org.littleshoot.mina.common.IdleStatus;
 import org.littleshoot.mina.common.IoHandler;
 import org.littleshoot.mina.common.IoHandlerAdapter;
 import org.littleshoot.mina.common.IoSession;
 import org.littleshoot.mina.util.SessionUtil;
-import org.lastbamboo.common.stun.stack.message.turn.SendIndication;
-import org.lastbamboo.common.tcp.frame.TcpFrame;
-import org.lastbamboo.common.tcp.frame.TcpFrameEncoder;
-import org.lastbamboo.common.util.mina.MinaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,15 +123,17 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
         for (final byte[] data : buffers)
             {
             m_log.debug("Sending buffer with capacity: {}", data.length);
-            final TcpFrame frame = new TcpFrame(data);
-            final TcpFrameEncoder encoder = new TcpFrameEncoder();
-            final ByteBuffer encodedFrame = encoder.encode(frame);
+            //final TcpFrame frame = new TcpFrame(data);
+            //final TcpFrameEncoder encoder = new TcpFrameEncoder();
+            //final ByteBuffer encodedFrame = encoder.encode(frame);
             
             // TODO: Avoid this extra copy!!
-            final byte[] bytes = MinaUtils.toByteArray(encodedFrame);
-            m_log.debug("Sending TCP framed data of length: {}", bytes.length);
+            //final byte[] bytes = MinaUtils.toByteArray(encodedFrame);
+            //m_log.debug("Sending TCP framed data of length: {}", bytes.length);
+            
+            //m_log.info("Sending bytes: {}", data);
             final SendIndication indication = 
-                new SendIndication(m_remoteAddress, bytes);
+                new SendIndication(m_remoteAddress, data);
             m_ioSession.write(indication);
             }
         }
