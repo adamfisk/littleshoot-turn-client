@@ -84,7 +84,7 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
         
         // We consider a connection to be idle if there's been no 
         // traffic in either direction for awhile.  
-        session.setIdleTime(IdleStatus.BOTH_IDLE, 60 * 2);
+        //session.setIdleTime(IdleStatus.BOTH_IDLE, 60 * 2);
         }
 
     public void sessionIdle(final IoSession session, 

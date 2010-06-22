@@ -50,7 +50,7 @@ public class TurnClientIoHandler extends IoHandlerAdapter
         
         // We consider the session idle fairly quickly to free up expensive
         // resources.
-        session.setIdleTime(IdleStatus.WRITER_IDLE, 80);
+        //session.setIdleTime(IdleStatus.WRITER_IDLE, 80);
         }
 
     @Override
