@@ -15,8 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * {@link IoHandler} for local sockets to the HTTP server.  There is one
- * socket/session for each remote host we're exchanging data with.  This
+ * {@link IoHandler} for local sockets to the HTTP server. There is one
+ * socket/session for each remote host we're exchanging data with. This
  * effectively mimics the remote host connecting directly to the local
  * HTTP server, with the data already extracted from the TURN messages and
  * forwarded along these sockets.<p>
@@ -52,6 +52,7 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
         m_remoteAddress = remoteAddress;
         }
 
+    @Override
     public void messageReceived(final IoSession session, final Object message) 
         {
         m_log.debug("Received local data message.");
@@ -61,23 +62,26 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
         // so we make sure to split it up.
         final ByteBuffer in = (ByteBuffer) message;
         
-        // Send the data broken up into chunks if necessary.  This 
+        // Send the data broken up into chunks if necessary. This 
         // is because TURN messages cannot be larger than 0xffff.
         sendSplitBuffers(in);
         }
     
+    @Override
     public void messageSent(final IoSession session, final Object message) 
         {
         m_log.debug("Sent local TURN message number: {}", 
             session.getWrittenMessages());
         }
     
+    @Override
     public void sessionClosed(final IoSession session) 
         {
         // Remember this is only a local "proxied" session.  
         m_log.debug("Received **local** session closed!!");
         }
     
+    @Override
     public void sessionCreated(final IoSession session) 
         {
         SessionUtil.initialize(session);
@@ -87,6 +91,7 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
         //session.setIdleTime(IdleStatus.BOTH_IDLE, 60 * 2);
         }
 
+    @Override
     public void sessionIdle(final IoSession session, 
         final IdleStatus status) throws Exception
         {
@@ -98,6 +103,7 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
         session.close();
         }
 
+    @Override
     public void exceptionCaught(final IoSession session, 
         final Throwable cause) 
         {
@@ -123,13 +129,6 @@ public class TurnLocalIoHandler extends IoHandlerAdapter
         for (final byte[] data : buffers)
             {
             m_log.debug("Sending buffer with capacity: {}", data.length);
-            //final TcpFrame frame = new TcpFrame(data);
-            //final TcpFrameEncoder encoder = new TcpFrameEncoder();
-            //final ByteBuffer encodedFrame = encoder.encode(frame);
-            
-            // TODO: Avoid this extra copy!!
-            //final byte[] bytes = MinaUtils.toByteArray(encodedFrame);
-            //m_log.debug("Sending TCP framed data of length: {}", bytes.length);
             
             //m_log.info("Sending bytes: {}", data);
             final SendIndication indication = 
