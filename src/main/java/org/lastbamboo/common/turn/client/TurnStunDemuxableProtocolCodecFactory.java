@@ -1,17 +1,11 @@
 package org.lastbamboo.common.turn.client;
 
-import java.net.InetSocketAddress;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import org.apache.commons.id.uuid.UUID;
-import org.littleshoot.mina.common.ByteBuffer;
-import org.littleshoot.mina.filter.codec.ProtocolEncoder;
 import org.lastbamboo.common.stun.stack.StunDemuxableProtocolCodecFactory;
 import org.lastbamboo.common.stun.stack.message.StunMessage;
 import org.lastbamboo.common.util.mina.DemuxableProtocolCodecFactory;
 import org.lastbamboo.common.util.mina.DemuxableProtocolDecoder;
+import org.littleshoot.mina.common.ByteBuffer;
+import org.littleshoot.mina.filter.codec.ProtocolEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

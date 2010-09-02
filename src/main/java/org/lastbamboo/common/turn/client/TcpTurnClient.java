@@ -260,6 +260,8 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
                     m_log.error("Could not create session");
                     throw new RuntimeIoException("Could not get session");
                     }
+                
+                // TODO: We should not need this.
                 final TurnStunMessageMapper mapper = 
                     new TurnStunMessageMapperImpl();
                 m_ioSession.setAttribute("REMOTE_ADDRESS_MAP", mapper);
