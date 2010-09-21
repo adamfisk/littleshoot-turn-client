@@ -119,6 +119,8 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
             }
         final Collection<InetSocketAddress> candidates = 
             this.m_candidateProvider.getCandidates();
+        
+        m_log.info("Attempting connections to: {}", candidates);
 
         for (final InetSocketAddress serverAddress : candidates)
             {
@@ -219,6 +221,8 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
             ExecutorThreadModel.getInstance("TCP-TURN-Client-"+hashCode());
         config.setThreadModel(threadModel);
         //config.setThreadModel(ThreadModel.MANUAL);
+        
+        m_log.info("Connection to STUN server here: {}", m_stunServerAddress);
         
         final IoHandler ioHandler = new TurnClientIoHandler(this);
         final ConnectFuture connectFuture; 
