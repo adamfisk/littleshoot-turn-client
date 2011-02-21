@@ -15,9 +15,9 @@ import org.lastbamboo.common.stun.stack.message.StunMessageVisitor;
 import org.lastbamboo.common.stun.stack.message.StunMessageVisitorFactory;
 import org.lastbamboo.common.tcp.frame.TcpFrame;
 import org.lastbamboo.common.tcp.frame.TcpFrameCodecFactory;
-import org.lastbamboo.common.util.mina.DemuxableProtocolCodecFactory;
-import org.lastbamboo.common.util.mina.DemuxingProtocolCodecFactory;
-import org.lastbamboo.common.util.mina.MinaUtils;
+import org.littleshoot.util.mina.DemuxableProtocolCodecFactory;
+import org.littleshoot.util.mina.DemuxingProtocolCodecFactory;
+import org.littleshoot.util.mina.MinaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

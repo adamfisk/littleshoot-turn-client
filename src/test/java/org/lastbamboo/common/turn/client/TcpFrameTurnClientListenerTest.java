@@ -20,8 +20,8 @@ import org.littleshoot.mina.common.IoSession;
 import org.junit.Test;
 import org.lastbamboo.common.tcp.frame.TcpFrame;
 import org.lastbamboo.common.tcp.frame.TcpFrameEncoder;
-import org.lastbamboo.common.util.mina.ByteBufferUtils;
-import org.lastbamboo.common.util.mina.MinaUtils;
+import org.littleshoot.util.mina.ByteBufferUtils;
+import org.littleshoot.util.mina.MinaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

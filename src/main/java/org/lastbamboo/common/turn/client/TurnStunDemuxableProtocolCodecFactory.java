@@ -2,8 +2,8 @@ package org.lastbamboo.common.turn.client;
 
 import org.lastbamboo.common.stun.stack.StunDemuxableProtocolCodecFactory;
 import org.lastbamboo.common.stun.stack.message.StunMessage;
-import org.lastbamboo.common.util.mina.DemuxableProtocolCodecFactory;
-import org.lastbamboo.common.util.mina.DemuxableProtocolDecoder;
+import org.littleshoot.util.mina.DemuxableProtocolCodecFactory;
+import org.littleshoot.util.mina.DemuxableProtocolDecoder;
 import org.littleshoot.mina.common.ByteBuffer;
 import org.littleshoot.mina.filter.codec.ProtocolEncoder;
 import org.slf4j.Logger;

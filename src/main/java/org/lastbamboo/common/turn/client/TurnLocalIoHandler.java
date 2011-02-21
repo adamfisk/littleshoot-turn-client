@@ -4,7 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 
 import org.lastbamboo.common.stun.stack.message.turn.SendIndication;
-import org.lastbamboo.common.util.mina.MinaUtils;
+import org.littleshoot.util.mina.MinaUtils;
 import org.littleshoot.mina.common.ByteBuffer;
 import org.littleshoot.mina.common.IdleStatus;
 import org.littleshoot.mina.common.IoHandler;
