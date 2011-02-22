@@ -1,7 +1,7 @@
 package org.lastbamboo.common.turn.client;
 
-import org.lastbamboo.common.stun.stack.StunDemuxableProtocolCodecFactory;
-import org.lastbamboo.common.stun.stack.message.StunMessage;
+import org.littleshoot.stun.stack.StunDemuxableProtocolCodecFactory;
+import org.littleshoot.stun.stack.message.StunMessage;
 import org.littleshoot.util.mina.DemuxableProtocolCodecFactory;
 import org.littleshoot.util.mina.DemuxableProtocolDecoder;
 import org.littleshoot.mina.common.ByteBuffer;

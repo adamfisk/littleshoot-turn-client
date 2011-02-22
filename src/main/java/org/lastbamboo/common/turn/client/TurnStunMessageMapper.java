@@ -2,7 +2,7 @@ package org.lastbamboo.common.turn.client;
 
 import java.net.InetSocketAddress;
 
-import org.lastbamboo.common.stun.stack.message.StunMessage;
+import org.littleshoot.stun.stack.message.StunMessage;
 
 /**
  * Helper class for TURN that maps STUN transaction IDs to remote addresses. 

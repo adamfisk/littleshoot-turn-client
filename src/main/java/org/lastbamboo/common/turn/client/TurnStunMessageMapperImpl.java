@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.id.uuid.UUID;
-import org.lastbamboo.common.stun.stack.message.StunMessage;
+import org.littleshoot.stun.stack.message.StunMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
