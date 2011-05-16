@@ -51,16 +51,18 @@
 
     <dependencies>
 
+<!--
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>r08</version>
         </dependency>
+-->
 
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>mina-port</artifactId>
-            <version>1.0</version>
+            <version>${mina.port.version}</version>
         </dependency> 
 
         <dependency>
