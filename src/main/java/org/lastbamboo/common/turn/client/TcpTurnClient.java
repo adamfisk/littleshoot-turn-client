@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang.SystemUtils;
+import org.littleshoot.dnssec4j.DNSSECException;
+import org.littleshoot.dnssec4j.DnsSec;
 import org.littleshoot.mina.common.ByteBuffer;
 import org.littleshoot.mina.common.CloseFuture;
 import org.littleshoot.mina.common.ConnectFuture;
@@ -139,8 +141,18 @@ public class TcpTurnClient extends StunMessageVisitorAdapter<StunMessage>
         }
     }
 
-    private void connect(final InetSocketAddress stunServerAddress,
-            final InetSocketAddress localAddress) {
+    private void connect(final InetSocketAddress unverifiedStunServerAddress,
+            final InetSocketAddress localAddress) throws IOException {
+        final InetSocketAddress stunServerAddress;
+        if (TurnClientConfig.isUseDnsSec()) {
+            try {
+                stunServerAddress = DnsSec.verify(unverifiedStunServerAddress);
+            } catch (final DNSSECException e) {
+                throw new IOException("DNSSEC verification error", e);
+            }
+        } else {
+            stunServerAddress = unverifiedStunServerAddress;
+        }
         final StunMessageDecoder decoder = new StunMessageDecoder();
         final IoFilter turnFilter = new IoFilterAdapter() {
             @Override

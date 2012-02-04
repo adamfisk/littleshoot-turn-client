@@ -52,6 +52,11 @@ repos separately from the parent.
 
         <dependency>
             <groupId>org.littleshoot</groupId>
+            <artifactId>dnssec4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.littleshoot</groupId>
             <artifactId>mina-port</artifactId>
         </dependency> 
 
