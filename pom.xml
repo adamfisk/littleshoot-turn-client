@@ -3,7 +3,7 @@
     <groupId>org.littleshoot</groupId>
     <artifactId>turn-client</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
     <name>LittleShoot TURN Client</name>
     <url>http://www.littleshoot.org</url>
 
