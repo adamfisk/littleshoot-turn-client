@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.littleshoot</groupId>
         <artifactId>parent</artifactId>
-        <version>1.0.3</version>
+        <version>1.0.4</version>
     </parent>
 
     <scm>
@@ -45,30 +45,31 @@ repos separately from the parent.
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>dnssec4j</artifactId>
+            <version>0.1.6</version>
         </dependency>
 
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>mina-util</artifactId>
-            <version>${ls.version}</version>
+            <version>1.0.4</version>
         </dependency> 
 
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>stun-client</artifactId>
-            <version>${ls.version}</version>
+            <version>1.0.4</version>
         </dependency> 
 
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>stun-stack</artifactId>
-            <version>${ls.version}</version>
+            <version>1.0.4</version>
         </dependency> 
 
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>tcp-framing</artifactId>
-            <version>${ls.version}</version>
+            <version>1.0.4</version>
         </dependency> 
 
     </dependencies>
