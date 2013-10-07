@@ -51,25 +51,25 @@ repos separately from the parent.
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>mina-util</artifactId>
-            <version>1.0.4</version>
+            <version>${ls.version}</version>
         </dependency> 
 
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>stun-client</artifactId>
-            <version>1.0.4</version>
+            <version>${ls.version}</version>
         </dependency> 
 
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>stun-stack</artifactId>
-            <version>1.0.4</version>
+            <version>${ls.version}</version>
         </dependency> 
 
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>tcp-framing</artifactId>
-            <version>1.0.4</version>
+            <version>${ls.version}</version>
         </dependency> 
 
     </dependencies>
